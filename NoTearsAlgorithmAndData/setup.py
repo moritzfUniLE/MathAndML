@@ -21,5 +21,5 @@ setup(
              'bin/notears_nonlinear'],
     packages=['notears'],
     package_dir={'notears': 'notears'},
-    install_requires=['numpy', 'scipy', 'python-igraph'],
+    install_requires=['numpy', 'scipy', 'python-igraph', 'networkx', 'plotly', 'pandas', 'matplotlib'],
 )
