@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
-from notears import linear, utils
+from notears import linear, utils, visualizeAdj, add_labels_for_graph
 import numpy as np
 import argparse
-from visualizeAdj import visualizeHeatmap, visualizeGraph
-from add_labels_for_graph import addLabels
-
 
 def main(args):
     X = np.loadtxt(args.X_path, delimiter=',')
@@ -24,9 +21,9 @@ def parse_args():
 
 def visualize(filename):
     new_file = f"W_est_new.csv"
-    addLabels(filename, new_file)
-    visualizeHeatmap(filename)
-    visualizeGraph(new_file)
+    add_labels_for_graph.addLabels(filename, new_file)
+    visualizeAdj.visualizeHeatmap(filename)
+    visualizeAdj.visualizeGraph(new_file)
 
 if __name__ == '__main__':
     args = parse_args()

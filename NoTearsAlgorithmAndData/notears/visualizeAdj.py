@@ -1,5 +1,6 @@
 from plotly import express as px
 import csv
+from os import path, makedirs, getcwd
 from numpy import array
 import pandas as pd
 import networkx as nx
@@ -15,9 +16,14 @@ def loadMatrixFromCSV(filename):
     return result
 
 def visualizeHeatmap(filename):
+
+    output_dir = path.join(getcwd(), 'images')
+    makedirs(output_dir, exist_ok=True)
+    image_path = path.join(output_dir, 'Heatmap.png')
+
     adj_matrix = loadMatrixFromCSV(filename)
     figure = px.imshow(adj_matrix)
-    #figure.write_image("./images/graph_heatmap.png")
+    figure.write_image(image_path)
     figure.show()
 
 def visualizeGraph(filename):
@@ -55,5 +61,10 @@ def visualizeGraph(filename):
     plt.title("Graph from Weighted Adjacency Matrix")
     plt.axis('off')
     plt.tight_layout()
-    #plt.savefig("./images/graph_layout.png", dpi=300, bbox_inches='tight')
+
+    output_dir = path.join(getcwd(), 'images')
+    makedirs(output_dir, exist_ok=True)
+    image_path = path.join(output_dir, 'Graph.png')
+    plt.savefig("./images/graph_layout.png", dpi=300, bbox_inches='tight')
+
     plt.show()
