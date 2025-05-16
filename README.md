@@ -1,4 +1,4 @@
-To run the notears algorithm navigate to `NoTearsAlgorithmAndData` and run:
+To run the notears algorithm activate your Virtual Environment and navigate to `NoTearsAlgorithmAndData` and run:
 
 `pip install .`
 
