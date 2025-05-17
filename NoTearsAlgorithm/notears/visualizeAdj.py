@@ -64,7 +64,7 @@ def visualizeGraph(filename):
 
     output_dir = path.join(getcwd(), 'images')
     makedirs(output_dir, exist_ok=True)
-    image_path = path.join(output_dir, 'Graph.png')
-    plt.savefig("./images/graph_layout.png", dpi=300, bbox_inches='tight')
+    image_path = path.join(output_dir, 'graph_layout.png')
+    plt.savefig(image_path, dpi=300, bbox_inches='tight')
 
     plt.show()
