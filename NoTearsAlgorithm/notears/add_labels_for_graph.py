@@ -15,3 +15,5 @@ def addLabels(input_CSV, output_CSV):
                 row_new.extend(row)
                 writer.writerow(row_new)
 
+if __name__ == "__main__":
+    addLabels("../W_est_regularized.csv", "../W_est_regularized_labeled.csv")

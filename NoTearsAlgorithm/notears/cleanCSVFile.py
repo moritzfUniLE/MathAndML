@@ -10,17 +10,20 @@ def cleanUpCsv(csv_filename_input, csv_filename_output):
             for row in reader:
                 cleaned_row = [val.replace(',','.') for val in row]
                 writer.writerow(cleaned_row)
+
 if __name__ == '__main__':
 
-    directory = '../../DataCSV/cleaned'
-    dir_output = f"{directory}/conglomeratedData.csv"
-    with open(dir_output, mode='w', newline='', encoding='utf-8') as csv_file_output:
+
+
+    directory_csv_cleaned = '../../NoTearsData/DataCSV/cleaned/MainData'
+    dir_output_cleaned = f"{directory_csv_cleaned}/conglomeratedData.csv"
+    with open(dir_output_cleaned, mode='w', newline='', encoding='utf-8') as csv_file_output:
         writer = csv.writer(csv_file_output)
 
 
-        for file in os.listdir(directory):
+        for file in os.listdir(directory_csv_cleaned):
             if file != "conglomeratedData.csv":
-                path = f"{directory}/{file}"
+                path = f"{directory_csv_cleaned}/{file}"
                 with open(path, mode='r', encoding='utf-8') as csv_file:
                     reader = csv.reader(csv_file, delimiter=',')
                     for row in reader:
