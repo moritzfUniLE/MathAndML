@@ -16,12 +16,11 @@ def parse_args():
     parser.add_argument('--lambda1', type=float, default=0.1, help='L1 regularization parameter')
     parser.add_argument('--loss_type', type=str, default='l2', help='l2, logistic, poisson loss')
     parser.add_argument('--W_path', type=str, default='W_est.csv', help='p by p weighted adjacency matrix of estimated DAG in csv format')
-    parser.add_argument('--averageGraphRuns', type=int, default=1, help='amount the algorithm gets run to average outcome')
     args = parser.parse_args()
     return args
 
 def visualize(filename):
-    new_file = f"W_est_labelled.csv"
+    new_file = f"W_est_labeled.csv"
     add_labels_for_graph.addLabels(filename, new_file)
     visualizeAdj.visualizeHeatmap(filename)
     visualizeAdj.visualizeGraph(new_file)
@@ -30,5 +29,6 @@ if __name__ == '__main__':
     args = parse_args()
     main(args)
     visualize(args.W_path)
+    input("Press enter to exit")
 
 

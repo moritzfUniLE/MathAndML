@@ -24,7 +24,7 @@ def visualizeHeatmap(filename):
     adj_matrix = loadMatrixFromCSV(filename)
     figure = px.imshow(adj_matrix)
     figure.write_image(image_path)
-    figure.show()
+    #figure.show()
 
 def visualizeGraph(filename):
     # Load weighted adjacency matrix from CSV
@@ -67,7 +67,7 @@ def visualizeGraph(filename):
     image_path = path.join(output_dir, 'graph_layout.png')
     plt.savefig(image_path, dpi=300, bbox_inches='tight')
 
-    plt.show()
+    #plt.show()
 
 if __name__ == '__main__':
     visualizeGraph("../W_est_regularized_labeled.csv")
