@@ -16,10 +16,11 @@ def loadMatrixFromCSV(filename):
     return result
 
 def visualizeHeatmap(filename):
-
+    base_name = path.splitext(filename)[0]
+    output_filename = f"heatmap_{base_name}.png"
     output_dir = path.join(getcwd(), 'images')
     makedirs(output_dir, exist_ok=True)
-    image_path = path.join(output_dir, 'Heatmap.png')
+    image_path = path.join(output_dir, output_filename)
 
     adj_matrix = loadMatrixFromCSV(filename)
     figure = px.imshow(adj_matrix)
@@ -62,9 +63,12 @@ def visualizeGraph(filename):
     plt.axis('off')
     plt.tight_layout()
 
+    base_name = path.splitext(filename)[0]
+    output_filename = f"graph_{base_name}.png"
     output_dir = path.join(getcwd(), 'images')
     makedirs(output_dir, exist_ok=True)
-    image_path = path.join(output_dir, 'graph_layout.png')
+    image_path = path.join(output_dir, output_filename)
+
     plt.savefig(image_path, dpi=300, bbox_inches='tight')
 
     #plt.show()

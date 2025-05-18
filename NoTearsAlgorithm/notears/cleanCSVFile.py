@@ -15,14 +15,14 @@ if __name__ == '__main__':
 
 
 
-    directory_csv_cleaned = '../../NoTearsData/DataCSV/cleaned/MainData'
-    dir_output_cleaned = f"{directory_csv_cleaned}/conglomeratedData.csv"
+    directory_csv_cleaned = '../../NoTearsData/DataCSV/cleaned/CombinedData'
+    dir_output_cleaned = f"{directory_csv_cleaned}/conglomeratedDataCombined.csv"
     with open(dir_output_cleaned, mode='w', newline='', encoding='utf-8') as csv_file_output:
         writer = csv.writer(csv_file_output)
 
 
         for file in os.listdir(directory_csv_cleaned):
-            if file != "conglomeratedData.csv":
+            if file != "conglomeratedDataCombined.csv":
                 path = f"{directory_csv_cleaned}/{file}"
                 with open(path, mode='r', encoding='utf-8') as csv_file:
                     reader = csv.reader(csv_file, delimiter=',')

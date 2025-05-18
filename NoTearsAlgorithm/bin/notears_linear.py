@@ -20,15 +20,13 @@ def parse_args():
     return args
 
 def visualize(filename):
-    new_file = f"W_est_labeled.csv"
-    add_labels_for_graph.addLabels(filename, new_file)
+    output_csv_labeled = add_labels_for_graph.addLabels(filename)
     visualizeAdj.visualizeHeatmap(filename)
-    visualizeAdj.visualizeGraph(new_file)
+    visualizeAdj.visualizeGraph(output_csv_labeled)
 
 if __name__ == '__main__':
     args = parse_args()
     main(args)
     visualize(args.W_path)
-    input("Press enter to exit")
 
 

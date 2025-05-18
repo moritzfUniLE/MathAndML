@@ -1,8 +1,9 @@
 import csv
+from os import path
 
-
-def addLabels(input_CSV, output_CSV):
-
+def addLabels(input_CSV):
+    base_name = path.splitext(input_CSV)[0]
+    output_CSV = f"{base_name}_labeled.csv"
     with open(input_CSV, mode='r', newline='', encoding='utf-8') as csvfilein, \
          open(output_CSV, mode='w', newline='', encoding='utf-8') as csvfileout:
             reader = csv.reader(csvfilein, delimiter=',')
@@ -15,5 +16,7 @@ def addLabels(input_CSV, output_CSV):
                 row_new.extend(row)
                 writer.writerow(row_new)
 
+    return output_CSV
+
 if __name__ == "__main__":
-    addLabels("../W_est_regularized.csv", "../W_est_regularized_labeled.csv")
+    addLabels("../W_est_regularized.csv")
