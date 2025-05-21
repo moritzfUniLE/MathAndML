@@ -74,5 +74,5 @@ def visualizeGraph(filename):
     #plt.show()
 
 if __name__ == '__main__':
-    visualizeGraph("W_est_nonlinear_MainData_labeled1.csv")
-    visualizeHeatmap("W_est_nonlinear_MainData1.csv")
+    visualizeGraph("W_est_labeled.csv")
+    visualizeHeatmap("W_est.csv")
