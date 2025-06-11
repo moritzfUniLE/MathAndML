@@ -1,0 +1,96 @@
+# Nonlinear NOTEARS DAG Learner
+
+This repository contains a small, self‑contained wrapper around the **non‑linear NOTEARS** algorithm (`run_notears.py`, `notears_core.py`). It trains a directed acyclic graph (DAG) on a numerical data set and can visualise the learned structure as a **heat‑map** _and_ as a _directed graph_.
+
+----------
+
+## 1 Installation
+
+```bash
+# 1. Make sure the files `run_notears.py`, `notears_core.py`, `requirements.txt` and this `README.md` are located in **one directory** (e.g. `notears-mlp`).
+cd <your-working-directory>
+
+# 2. (Recommended) create a virtual environment
+python -m venv venv
+source venv/bin/activate  # on Windows: venv\Scripts\activate
+
+# 3. Install the required packages
+pip install -r requirements.txt
+
+```
+
+All packages are available from PyPI; CUDA support for PyTorch is **optional**.
+
+----------
+
+## 2 Quick start
+
+```bash
+python run_notears.py \
+    --csv MainDataPreprocessedIQR.csv \
+    --hidden 20 --lambda1 1e-3 --lambda2 0 \
+    --max-iter 50 --thresh 0.02 \
+    --out results --plot --graph
+
+```
+
+After the run you will find in the chosen  `--out` directory:
+
+| file | purpose |
+|--|--|
+| `adjacency.csv` |  learned **d × d** weight matrix (after optional threshold)
+|`edges.json`| sparse edge list; convenient for D3, Gephi, etc.
+|`adjacency.png`| colour heat‑map (only if `--plot`)
+|`graph.png`|tidy NetworkX drawing (only if `--graph`)
+
+----------
+
+## 3 CLI reference
+
+Every flag has an in‑script help text (`python run_notears.py --help`). The table below gives a concise overview.
+
+| flag | type / default | description |
+|--|--|--|
+|`--csv`| **required** | Path to the input CSV; _only numeric columns_ are used.
+|`--hidden`|`int`, _10_ | Width _m_ of the first hidden layer of the MLP.
+|`--lambda1` | `float`, _0.1_ | L1 (lasso) penalty – enforces sparsity and DAG constraint.
+|`--lambda2` | `float`, _0.1_ | L2 (ridge) penalty – stabilises optimisation.
+|`--max-iter` | `int`, _20_ | Outer dual‑ascent iterations.
+|`--thresh` | `float`, _None_ | Zero‑out weights with `W < thresh` **after** training. None keeps raw values.
+|`--out` | `str`, _"results"_ | Output directory (created if absent).
+|`--seed` | `int`, _42_ | Global random seed for NumPy & PyTorch.
+|`--no-impute` | _(flag)_ | **Deactivate** NaN imputation (run will abort if NaN present).
+|`--plot` | _(flag)_ | Save a heat‑map of the adjacency matrix as `adjacency.png`.
+|`--graph` | _(flag)_ | Render a directed graph layout as `graph.png`.
+
+----------
+
+## 4 Troubleshooting and tips
+
+-   **All‑zero matrix?**
+    
+    -   Lower or disable `--thresh`.
+        
+    -   Reduce `--lambda1` (e.g. `1e-3` → `1e-4`).
+        
+-   **NaN explosion during optimisation?**
+    
+    -   Keep the built‑in weight bounds _(0 … 1.5)_ or add a small `--lambda2`.
+        
+-   **Very small weights (< 0.05):**
+    
+    -   That is normal after z‑score scaling; compare _relative_ magnitudes or refit on the fixed structure without L1.
+        
+
+----------
+
+## 5 Uninstall
+
+```bash
+# Inside the project root
+pip uninstall -r requirements.txt -y
+rm -rf venv  # if you created one
+
+```
+
+----------
