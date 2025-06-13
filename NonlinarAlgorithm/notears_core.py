@@ -1,36 +1,45 @@
 """
-notears_core.py
-A self-contained implementation of nonlinear NOTEARS (MLP variant)
-adapted from your original script.  No plotting, no test stubs.
-MIT License – free to use on Universität Leipzig’s HPC cluster.
+Core implementation of NOTEARS nonlinear causal discovery.
+Defines the neural net, augmented Lagrangian optimizer, and utility functions.
 """
-# -------------------------- imports ---------------------------------------
-import math, numpy as np, torch
+import math
+import numpy as np
+import torch
 import torch.nn as nn
 import scipy.linalg as slin
 import scipy.optimize as sopt
 
-# --------------------- utility: trace expm --------------------------------
+
 class TraceExpm(torch.autograd.Function):
+    """
+    Custom autograd for trace of matrix exponential of h(A)=trace(e^{A*A})
+    Used in DAG acyclicity constraint.
+    """
     @staticmethod
     def forward(ctx, input):
+        # Compute expm on CPU numpy array
         E = slin.expm((input * input).detach().cpu().numpy())
         ctx.save_for_backward(torch.from_numpy(E).to(input))
         return torch.tensor(E.trace(), dtype=input.dtype, device=input.device)
 
     @staticmethod
     def backward(ctx, grad_out):
+        # Gradient is transpose of E times upstream grad
         (E,) = ctx.saved_tensors
         return grad_out * E.t()
 
 trace_expm = TraceExpm.apply
 
-# --------------------- locally-connected layer ----------------------------
+
 class LocallyConnected(nn.Module):
+    """
+    Per-node local layer: distinct weights for each input dimension.
+    Used to map from hidden layer back to d-dimensional output.
+    """
     def __init__(self, d, m_in, m_out, bias=True):
         super().__init__()
         self.weight = nn.Parameter(torch.empty(d, m_in, m_out))
-        self.bias   = nn.Parameter(torch.empty(d, m_out)) if bias else None
+        self.bias = nn.Parameter(torch.empty(d, m_out)) if bias else None
         self.reset_parameters()
 
     @torch.no_grad()
@@ -40,119 +49,216 @@ class LocallyConnected(nn.Module):
         if self.bias is not None:
             nn.init.uniform_(self.bias, -math.sqrt(k), math.sqrt(k))
 
-    def forward(self, x):                       # x: [n, d, m_in]
-        out = torch.matmul(x.unsqueeze(2),      #   [n, d, 1, m_in]
-                           self.weight.unsqueeze(0)) \
-              .squeeze(2)                       # -> [n, d, m_out]
+    def forward(self, x):
+        # x: (n_samples, d, m_in)
+        out = torch.matmul(x.unsqueeze(2), self.weight.unsqueeze(0)).squeeze(2)
         if self.bias is not None:
             out += self.bias
         return out
 
-# --------------------- custom LBFGS-B (box constraints) -------------------
+
 class LBFGSBScipy(torch.optim.Optimizer):
-    def __init__(self, params, bounds=None):
+    """
+    Wrap SciPy L-BFGS-B optimizer to work with PyTorch parameters.
+    Splits parameters into a flat vector, handles bounds.
+    """
+    def __init__(self, params):
         super().__init__(params, {})
-        ps = self.param_groups[0]["params"]
-        self._numel  = sum(p.numel() for p in ps)
-        self._bounds = bounds or [(None, None)] * self._numel   # <-- NEW
-        for p in ps:
+        self._params = self.param_groups[0]['params']
+        self._numel = sum(p.numel() for p in self._params)
+        for p in self._params:
             p.requires_grad_(True)
 
-    def _gather_flat(self, attr):
-        return torch.cat([getattr(p, attr).view(-1) for p in self.param_groups[0]["params"]])
+    def _gather_flat_grad(self):
+        views=[]
+        for p in self._params:
+            view = p.grad.view(-1) if p.grad is not None else p.new_zeros(p.numel())
+            views.append(view)
+        return torch.cat(views,0)
 
-    def _distribute_flat(self, vec, attr):
-        offset = 0
-        for p in self.param_groups[0]["params"]:
-            n = p.numel()
-            getattr(p, attr).copy_(vec[offset:offset+n].view_as(p))
-            offset += n
+    def _gather_flat(self):
+        return torch.cat([p.data.view(-1) for p in self._params],0)
+
+    def _distribute_flat(self,x):
+        offset=0
+        for p in self._params:
+            numel=p.numel()
+            p.data.copy_(x[offset:offset+numel].view_as(p))
+            offset+=numel
 
     def step(self, closure):
-        flat0 = self._gather_flat("data").detach().cpu().double().numpy()
-        # bounds = [(None, None)] * self._numel   # no explicit bounds, but could add
-        bounds = self._bounds 
-        def func(flat):
-            flat_t = torch.as_tensor(flat, dtype=torch.get_default_dtype())
-            self._distribute_flat(flat_t, "data")
-            loss = closure().detach()
-            grad = self._gather_flat("grad").detach().cpu().double().numpy()
-            return loss.cpu().double().numpy(), grad
+        def wrapped_closure(x):
+            x=torch.from_numpy(x).double()
+            self._distribute_flat(x)
+            loss=float(closure())
+            flat_grad=self._gather_flat_grad().cpu().numpy()
+            return loss, flat_grad
 
-        sopt.minimize(func, flat0, method="L-BFGS-B", jac=True, bounds=bounds)
+        x0=self._gather_flat().cpu().numpy()
+        bounds=[(0,None) if i<self._numel//2 else (None,None) for i in range(self._numel)]
+        res=sopt.minimize(wrapped_closure,x0,method='L-BFGS-B',jac=True,bounds=bounds,options={'maxiter':100})
+        self._distribute_flat(torch.from_numpy(res.x))
 
-# --------------------- main model -----------------------------------------
+
 class NotearsMLP(nn.Module):
-    def __init__(self, d, m_hidden=10, bias=True):
+    """
+    Two-layer MLP for NOTEARS: parametrizes weighted adjacency via positive/negative weights.
+    h(A)=trace(e^{A*A})-d enforces DAG constraint.
+    """
+    def __init__(self, d, m_hidden=10):
         super().__init__()
-        self.d, self.m = d, m_hidden
-        # First layer is split into positive & negative weights → L1 via variable split
-        self.fc1_pos = nn.Linear(d, d * m_hidden, bias=bias)
-        self.fc1_neg = nn.Linear(d, d * m_hidden, bias=bias)
-        # Subsequent local layers (here: one extra layer → output dim 1)
-        self.fc2 = LocallyConnected(d, m_hidden, 1, bias=bias)
+        self.d=d
+        self.m=m_hidden
+        # Positive and negative weight maps
+        self.fc1_pos=nn.Linear(d,d*m_hidden)
+        self.fc1_neg=nn.Linear(d,d*m_hidden)
+        self.fc2=LocallyConnected(d,m_hidden,1)
+        nn.init.uniform_(self.fc1_pos.weight,0,0.1)
+        nn.init.uniform_(self.fc1_neg.weight,0,0.1)
 
-    # ---- core helpers -----------------------------------------------------
-    def forward(self, x):                       # x: [n, d]
-        x = self.fc1_pos(x) - self.fc1_neg(x)   # [n, d*m]
-        x = torch.sigmoid(x).view(-1, self.d, self.m)
-        x = self.fc2(x).squeeze(2)              # back to [n, d]
+    def forward(self,x):
+        # x: (n,d)
+        x=self.fc1_pos(x)-self.fc1_neg(x)
+        x=torch.sigmoid(x)
+        x=x.view(-1,self.d,self.m)
+        x=self.fc2(x).squeeze(2)
         return x
 
     def h_func(self):
-        w = self.fc1_pos.weight - self.fc1_neg.weight       # [d*m, d]
-        w = w.view(self.d, self.m, self.d).permute(2,0,1)   # [d, d, m]
-        A = (w**2).sum(2)                                   # [d, d]
-        return trace_expm(A) - self.d
+        """Compute acyclicity constraint h(A)."""
+        w=self.fc1_pos.weight-self.fc1_neg.weight
+        w=w.view(self.d,self.m,self.d).permute(2,0,1)
+        A=torch.sum(w*w,dim=2)
+        return trace_expm(A)-self.d
 
     def l2_reg(self):
-        reg = (self.fc1_pos.weight - self.fc1_neg.weight).pow(2).sum()
-        reg += self.fc2.weight.pow(2).sum()
-        return reg
+        """Compute L2 regularisation term."""
+        return torch.sum(self.fc1_pos.weight**2)+torch.sum(self.fc1_neg.weight**2)+torch.sum(self.fc2.weight**2)
 
     def fc1_l1(self):
-        return (self.fc1_pos.weight + self.fc1_neg.weight).sum()
+        """Compute L1 norm on fc1 weights for sparsity."""
+        return torch.sum(torch.abs(self.fc1_pos.weight))+torch.sum(torch.abs(self.fc1_neg.weight))
 
     @torch.no_grad()
     def fc1_to_adj(self):
-        w = self.fc1_pos.weight - self.fc1_neg.weight
-        w = w.view(self.d, self.m, self.d).permute(2,0,1)
-        A = (w**2).sum(2).sqrt()
-        return A.cpu().numpy()
+        """Extract adjacency matrix from learned weights."""
+        w=self.fc1_pos.weight-self.fc1_neg.weight
+        w=w.view(self.d,self.m,self.d).permute(2,0,1)
+        return torch.sqrt(torch.sum(w*w,dim=2)).cpu().numpy()
 
-# --------------------- solver (dual ascent) -------------------------------
-def notears_nonlinear(model, X,
-                      lambda1=0.1, lambda2=0.1,
-                      max_iter=20, h_tol=1e-8, rho_max=1e16,
-                      silent=False):
-    rho, alpha, h = 1., 0., np.inf
-    X_t = torch.from_numpy(X)
-    named = list(model.named_parameters())
-    params  = [p for _, p in named]
-    bounds  = []
-    for name, p in named:
-        rng = (0.0, 1.5) if name in ("fc1_pos.weight", "fc1_neg.weight") else (None, None)
-        bounds.extend([rng] * p.numel())          # one tuple per scalar entry
 
-    opt = LBFGSBScipy(params, bounds=bounds)      # <-- pass bounds here
+def notears_nonlinear(
+    model,
+    X,
+    lambda1=0.01,
+    lambda2=0.01,
+    max_iter=100,
+    h_tol=1e-8,
+    rho_max=1e32,
+    rho_mult=2.0,
+) -> np.ndarray:
+    """
+    Augmented Lagrangian optimization loop for NOTEARS nonlinear.
+
+    Args:
+        model: NotearsMLP instance.
+        X: Data matrix (n x d).
+        lambda1: L1 weight.
+        lambda2: L2 weight.
+        max_iter: Max outer iterations.
+        h_tol: Acyclicity tolerance.
+        rho_max: Max penalty coefficient.
+        rho_mult: Penalty multiplier on violation.
+
+    Returns:
+        Learned adjacency matrix as numpy.ndarray.
+    """
+    rho, alpha, h_val = 1.0, 0.0, np.inf
+    X_t=torch.from_numpy(X)
+    opt=LBFGSBScipy(model.parameters())
+
     for it in range(max_iter):
         def closure():
             opt.zero_grad()
-            loss = 0.5/X.shape[0]*(model(X_t)-X_t).pow(2).sum()
-            h_val = model.h_func()
-            obj = loss + lambda1*model.fc1_l1() + 0.5*lambda2*model.l2_reg() \
-                  + 0.5*rho*h_val*h_val + alpha*h_val
+            loss=0.5/X.shape[0]*torch.sum((model(X_t)-X_t)**2)
+            h_curr=model.h_func()
+            penalty=0.5*rho*h_curr*h_curr+alpha*h_curr
+            obj=loss+penalty+lambda1*model.fc1_l1()+0.5*lambda2*model.l2_reg()
             obj.backward()
             return obj
+
         opt.step(closure)
         with torch.no_grad():
-            h = model.h_func().item()
-        if not silent:
-            print(f"iter {it:02d}  h={h:.3e}  rho={rho:.1e}")
-        if h <= h_tol or rho >= rho_max: break
-        rho *= 10
-        alpha += rho*h
-    W = model.fc1_to_adj()
-    #print("min/max W vor Cut-off:", W.min(), W.max())
-    return W
+            h_val=model.h_func().item()
+        print(f"[INFO] Iter {it+1}: h={h_val:.8f}, rho={rho:.2e}")
+        if h_val<=h_tol: break
+        rho*=rho_mult
+        alpha+=rho*h_val
+        if rho>rho_max: break
 
+    return model.fc1_to_adj()
+
+
+def apply_threshold(W: np.ndarray, thresh: float | None) -> np.ndarray:
+    """Identical helper to zero small entries and diagonal."""
+    W_thr=W.copy()
+    if thresh is not None: W_thr[np.abs(W_thr)<thresh]=0.0
+    np.fill_diagonal(W_thr,0.0)
+    return W_thr
+
+
+def load_ground_truth_from_bif(bif_path: str) -> tuple[np.ndarray|None,list[str]|None,bool]:
+    """
+    Parse BIF file to extract ground-truth DAG and node names.
+
+    Returns (W, node_names, success_flag).
+    """
+    import re
+    try:
+        text=open(bif_path).read()
+        vars=re.findall(r'variable\s+(\w+)',text)
+        if not vars: raise ValueError("No variables found in BIF")
+        n=len(vars)
+        idx={v:i for i,v in enumerate(vars)}
+        W=np.zeros((n,n))
+        # Extract parent-child relations
+        for m in re.finditer(r'probability\s*\(\s*(\w+)\s*\|\s*([^\)]+)\)',text):
+            child=m.group(1)
+            parents=[p.strip() for p in m.group(2).split(',')]
+            for p in parents:
+                W[idx[p],idx[child]]=1
+        print(f"[INFO] Ground Truth loaded: {n} nodes")
+        return W,vars,True
+    except Exception as e:
+        print(f"[ERROR] BIF load failed: {e}")
+        return None,None,False
+
+
+def compute_metrics(W_learned: np.ndarray, W_true: np.ndarray, thresh: float | None=None) -> dict:
+    """
+    Compute Hamming distance, TP, FP, FN, precision, recall, and F1.
+    Returns dict with metrics and any error message.
+    """
+    try:
+        if W_learned.shape!=W_true.shape:
+            raise ValueError(f"Shape mismatch: learned {W_learned.shape} vs true {W_true.shape}")
+        Wl=(apply_threshold(W_learned,thresh)!=0).astype(int)
+        Wt=(W_true!=0).astype(int)
+        TP=int(np.sum((Wl==1)&(Wt==1)))
+        FP=int(np.sum((Wl==1)&(Wt==0)))
+        FN=int(np.sum((Wl==0)&(Wt==1)))
+        precision=TP/(TP+FP) if TP+FP>0 else 0
+        recall=TP/(TP+FN) if TP+FN>0 else 0
+        f1=2*precision*recall/(precision+recall) if precision+recall>0 else 0
+        return {
+            'hamming_distance':int(np.sum(Wl!=Wt)),
+            'true_positives':TP,
+            'false_positives':FP,
+            'false_negatives':FN,
+            'precision':float(precision),
+            'recall':float(recall),
+            'f1_score':float(f1),
+            'error':None
+        }
+    except Exception as e:
+        return {k:None for k in ['hamming_distance','true_positives','false_positives','false_negatives','precision','recall','f1_score']} | {'error':str(e)}
