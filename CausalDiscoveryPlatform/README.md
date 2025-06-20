@@ -73,8 +73,32 @@ xcode-select --install  # Install command line tools
 ```
 
 ### 3. Install Python Dependencies
+
+#### **Linux/macOS:**
 ```bash
 pip install -r requirements.txt
+```
+
+#### **Windows (Recommended - use conda):**
+```bash
+# Install Miniconda from https://docs.conda.io/en/latest/miniconda.html
+conda create -n causal-discovery python=3.11
+conda activate causal-discovery
+conda install numpy pandas scipy matplotlib networkx plotly flask
+conda install -c conda-forge bnlearn
+pip install flask-socketio werkzeug torch
+```
+
+#### **Windows (Alternative - pip with pre-compiled wheels):**
+```bash
+pip install -r requirements-windows.txt
+conda install -c conda-forge bnlearn  # If pip install bnlearn fails
+```
+
+#### **Docker (All platforms):**
+```bash
+docker-compose up --build
+# Access at http://localhost:5000
 ```
 
 **Key Dependencies:**
@@ -86,10 +110,11 @@ pip install -r requirements.txt
 - `networkx>=3.0.0` - Graph manipulation
 - `pandas>=2.0.0` - Data processing
 
-**Note on bnlearn**: The bnlearn library provides classical Bayesian network algorithms (Hill Climbing, PC, Grow-Shrink). If installation fails, you can also install via conda:
-```bash
-conda install -c conda-forge bnlearn
-```
+**Windows Installation Notes**: 
+- Windows users may encounter compilation errors with `pip install` due to missing C++ build tools
+- **Recommended**: Use conda which provides pre-compiled binaries
+- **Alternative**: Install Microsoft Visual C++ Build Tools, then use pip
+- **Docker option**: Available for users with Docker Desktop
 
 ### 4. Verify Installation
 ```bash
