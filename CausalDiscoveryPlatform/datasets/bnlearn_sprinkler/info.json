@@ -1,0 +1,45 @@
+{
+  "name": "bnlearn_sprinkler",
+  "description": "bnlearn sprinkler dataset - Bayesian network from bnlearn library",
+  "type": "discrete",
+  "nodes": 4,
+  "variables": [
+    "Cloudy",
+    "Sprinkler",
+    "Rain",
+    "Wet_Grass"
+  ],
+  "edges": 4,
+  "samples": 1000,
+  "bif_file": "bnlearn_sprinkler.bif",
+  "data_file": "bnlearn_sprinkler_data.csv",
+  "structure_parsed": true,
+  "adjacency_matrix": [
+    [
+      false,
+      true,
+      true,
+      false
+    ],
+    [
+      false,
+      false,
+      false,
+      true
+    ],
+    [
+      false,
+      false,
+      false,
+      true
+    ],
+    [
+      false,
+      false,
+      false,
+      false
+    ]
+  ],
+  "source": "bnlearn",
+  "original_name": "sprinkler"
+}

@@ -1,0 +1,446 @@
+/* Custom styles for NOTEARS Web GUI */
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: none;
+    margin-bottom: 1rem;
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 2px solid #e9ecef;
+    font-weight: 600;
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.nav-tabs {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link.active {
+    color: #0d6efd;
+    border-bottom: 3px solid #0d6efd;
+    background-color: transparent;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #0d6efd;
+    border-color: transparent;
+}
+
+#logContainer {
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.log-entry {
+    margin-bottom: 2px;
+    padding: 2px 4px;
+}
+
+.log-info {
+    color: #0d6efd;
+}
+
+.log-warning {
+    color: #fd7e14;
+}
+
+.log-error {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.log-success {
+    color: #198754;
+}
+
+.table-responsive {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.table th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    border-top: none;
+}
+
+.metric-card {
+    text-align: center;
+    padding: 1rem;
+    margin: 0.5rem;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.status-ready {
+    background-color: #28a745;
+}
+
+.status-running {
+    background-color: #ffc107;
+    animation: pulse 1.5s infinite;
+}
+
+.status-error {
+    background-color: #dc3545;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Visualization container */
+#visualization {
+    min-height: 500px;
+}
+
+/* Loading spinner */
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #0d6efd;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .col-md-3 {
+        margin-bottom: 2rem;
+    }
+    
+    .metric-card {
+        margin: 0.25rem;
+    }
+    
+    .metric-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* Dataset preview table */
+.dataset-table {
+    font-size: 0.9rem;
+}
+
+.dataset-table th,
+.dataset-table td {
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+}
+
+.dataset-table th {
+    background-color: #e9ecef;
+    font-weight: 600;
+}
+
+/* Progress bar customization */
+.progress {
+    height: 10px;
+}
+
+.progress-bar {
+    transition: width 0.3s ease;
+}
+
+/* Button groups */
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Card hover effects */
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transition: box-shadow 0.3s ease;
+}
+
+/* Form validation styles */
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.is-valid {
+    border-color: #28a745;
+}
+
+/* Custom scrollbar for log container */
+#logContainer::-webkit-scrollbar {
+    width: 8px;
+}
+
+#logContainer::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#logContainer::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+#logContainer::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* =================== DATASET MANAGEMENT STYLES =================== */
+
+/* Enhanced dataset table */
+.dataset-table {
+    font-size: 0.85rem;
+}
+
+.dataset-table td {
+    padding: 0.3rem;
+    vertical-align: middle;
+}
+
+.dataset-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Validation styles */
+.table-danger {
+    background-color: #f8d7da !important;
+    color: #721c24;
+}
+
+.table-warning {
+    background-color: #fff3cd !important;
+    color: #856404;
+}
+
+/* Editable table styles */
+td[contenteditable="true"] {
+    cursor: text;
+    position: relative;
+}
+
+td[contenteditable="true"]:hover {
+    background-color: #f8f9fa;
+}
+
+td[contenteditable="true"]:focus {
+    background-color: #e7f3ff;
+    outline: 2px solid #0d6efd;
+    outline-offset: -2px;
+}
+
+/* Upload modal specific styles */
+.modal-xl {
+    max-width: 1200px;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+    border-color: #0d6efd;
+    background-color: #f8f9fa;
+}
+
+.upload-area.dragover {
+    border-color: #0d6efd;
+    background-color: #e7f3ff;
+}
+
+/* Validation result styles */
+.validation-item {
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+    border-radius: 4px;
+}
+
+.validation-success {
+    background-color: #d1eddb;
+    color: #155724;
+    border-left: 4px solid #28a745;
+}
+
+.validation-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border-left: 4px solid #ffc107;
+}
+
+.validation-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+}
+
+/* Dataset stats cards */
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 0.5rem 0;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+/* File input styling */
+.form-control[type="file"] {
+    padding: 0.5rem;
+}
+
+.form-control[type="file"]:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Step indicators */
+.step-indicator {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.step-number {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: #6c757d;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+
+.step-number.active {
+    background-color: #0d6efd;
+}
+
+.step-number.completed {
+    background-color: #28a745;
+}
+
+/* Enhanced table row selection */
+.row-select:checked + td,
+.row-select:checked ~ td {
+    background-color: #e7f3ff !important;
+}
+
+/* Loading states */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.loading-spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 0.3rem solid #f3f3f3;
+    border-top: 0.3rem solid #0d6efd;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Enhanced responsive adjustments */
+@media (max-width: 768px) {
+    .modal-xl {
+        max-width: 95%;
+    }
+    
+    .dataset-table {
+        font-size: 0.75rem;
+    }
+    
+    .dataset-table td {
+        padding: 0.25rem;
+    }
+    
+    td[contenteditable="true"] {
+        min-width: 60px;
+    }
+}

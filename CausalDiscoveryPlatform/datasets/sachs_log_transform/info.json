@@ -1,0 +1,27 @@
+{
+  "name": "sachs_log_transform",
+  "description": "SACHS protein network data preprocessed with log transformation",
+  "type": "continuous",
+  "nodes": 11,
+  "variables": [
+    "Akt",
+    "Erk",
+    "Jnk",
+    "Mek",
+    "P38",
+    "PIP2",
+    "PIP3",
+    "PKA",
+    "PKC",
+    "Plcg",
+    "Raf"
+  ],
+  "edges": 17,
+  "samples": 7465,
+  "bif_file": "sachs_log_transform.bif",
+  "data_file": "sachs_log_transform_data.csv",
+  "structure_parsed": true,
+  "source": "SACHS protein signaling network (Sachs et al., 2005)",
+  "domain": "Protein signaling pathways",
+  "preprocessing": "LogTransform"
+}
