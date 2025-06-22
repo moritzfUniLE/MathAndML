@@ -1,0 +1,57 @@
+{
+  "total_datasets": 5,
+  "successful_tests": 5,
+  "failed_tests": 0,
+  "results_summary": [
+    {
+      "dataset": "complex",
+      "nodes": 6,
+      "true_edges": 7,
+      "learned_edges": 10,
+      "precision": 0.5,
+      "recall": 0.7142857142857143,
+      "f1_score": 0.588235294117647,
+      "runtime": 214.73396015167236
+    },
+    {
+      "dataset": "asia",
+      "nodes": 8,
+      "true_edges": 8,
+      "learned_edges": 12,
+      "precision": 0.5833333333333334,
+      "recall": 0.875,
+      "f1_score": 0.7000000000000001,
+      "runtime": 224.43342685699463
+    },
+    {
+      "dataset": "fork",
+      "nodes": 4,
+      "true_edges": 3,
+      "learned_edges": 4,
+      "precision": 0.5,
+      "recall": 0.6666666666666666,
+      "f1_score": 0.5714285714285715,
+      "runtime": 199.93957257270813
+    },
+    {
+      "dataset": "chain",
+      "nodes": 4,
+      "true_edges": 3,
+      "learned_edges": 6,
+      "precision": 0.3333333333333333,
+      "recall": 0.6666666666666666,
+      "f1_score": 0.4444444444444444,
+      "runtime": 321.6249384880066
+    },
+    {
+      "dataset": "collider",
+      "nodes": 4,
+      "true_edges": 3,
+      "learned_edges": 3,
+      "precision": 0.6666666666666666,
+      "recall": 0.6666666666666666,
+      "f1_score": 0.6666666666666666,
+      "runtime": 183.3341600894928
+    }
+  ]
+}

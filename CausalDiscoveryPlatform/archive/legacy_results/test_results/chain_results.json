@@ -1,0 +1,125 @@
+{
+  "dataset": "chain",
+  "dataset_info": {
+    "name": "chain",
+    "description": "Synthetic nonlinear dataset",
+    "type": "nonlinear",
+    "nodes": 4,
+    "variables": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "edges": 3,
+    "samples": 5000,
+    "bif_file": "chain.bif",
+    "data_file": "chain_data.csv",
+    "structure_parsed": true,
+    "adjacency_matrix": [
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    ]
+  },
+  "runtime_seconds": 321.6249384880066,
+  "learned_edges": 6,
+  "true_edges": 3,
+  "parameters": {
+    "lambda1": 0.01,
+    "lambda2": 0.01,
+    "max_iter": 50,
+    "threshold": 0.1
+  },
+  "metrics": {
+    "hamming_distance": 5,
+    "true_positives": 2,
+    "false_positives": 4,
+    "false_negatives": 1,
+    "precision": 0.3333333333333333,
+    "recall": 0.6666666666666666,
+    "f1_score": 0.4444444444444444,
+    "error": null
+  },
+  "adjacency_matrices": {
+    "learned": [
+      [
+        0.022769387811422348,
+        0.05601384863257408,
+        0.06692983210086823,
+        0.352538138628006
+      ],
+      [
+        0.055430762469768524,
+        0.01599622704088688,
+        0.2486448436975479,
+        2.899486541748047
+      ],
+      [
+        0.12014570832252502,
+        0.13844650983810425,
+        0.0009895283728837967,
+        2.5837948322296143
+      ],
+      [
+        0.008644205518066883,
+        2.117153962899465e-05,
+        0.000147213286254555,
+        0.025346338748931885
+      ]
+    ],
+    "ground_truth": [
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    ]
+  },
+  "node_names": [
+    "A",
+    "B",
+    "C",
+    "D"
+  ]
+}

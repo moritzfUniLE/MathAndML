@@ -1,0 +1,2 @@
+# This file ensures the saved_results directory is tracked by git
+# while ignoring the actual result files (which can be large)

@@ -1,0 +1,105 @@
+{
+  "name": "bnlearn_asia",
+  "description": "bnlearn asia dataset - Bayesian network from bnlearn library",
+  "type": "discrete",
+  "nodes": 8,
+  "variables": [
+    "asia",
+    "tub",
+    "smoke",
+    "lung",
+    "bronc",
+    "either",
+    "xray",
+    "dysp"
+  ],
+  "edges": 8,
+  "samples": 1000,
+  "bif_file": "bnlearn_asia.bif",
+  "data_file": "bnlearn_asia_data.csv",
+  "structure_parsed": true,
+  "adjacency_matrix": [
+    [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ],
+    [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false
+    ],
+    [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ],
+    [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ],
+    [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true
+    ],
+    [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  ],
+  "source": "bnlearn",
+  "original_name": "asia"
+}
