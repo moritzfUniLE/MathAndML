@@ -719,14 +719,19 @@ function createGroundTruthGraphVisualization(container, results) {
         return;
     }
     
+    // Use weighted matrix if available (for synthetic datasets), otherwise use binary
+    const groundTruthMatrix = results.ground_truth_matrix_weighted || results.ground_truth_matrix;
+    const isWeighted = results.ground_truth_matrix_weighted !== null && results.ground_truth_matrix_weighted !== undefined;
+    
     // Create a mock results object for ground truth
     const groundTruthResults = {
-        adjacency_matrix: results.ground_truth_matrix,
+        adjacency_matrix: groundTruthMatrix,
         node_names: results.node_names,
-        parameters: { threshold: 0.5 } // Ground truth is binary
+        parameters: { threshold: isWeighted ? 0.001 : 0.5 } // Lower threshold for weighted, 0.5 for binary
     };
     
-    createGraphVisualization(container, groundTruthResults, 'Ground Truth Graph', 'ground_truth');
+    const title = isWeighted ? 'Ground Truth Graph (Weighted)' : 'Ground Truth Graph';
+    createGraphVisualization(container, groundTruthResults, title, 'ground_truth');
 }
 
 // Create heatmap visualization
@@ -794,13 +799,18 @@ function createGroundTruthHeatmapVisualization(container, results) {
         return;
     }
     
+    // Use weighted matrix if available (for synthetic datasets), otherwise use binary
+    const groundTruthMatrix = results.ground_truth_matrix_weighted || results.ground_truth_matrix;
+    const isWeighted = results.ground_truth_matrix_weighted !== null && results.ground_truth_matrix_weighted !== undefined;
+    
     const groundTruthResults = {
-        adjacency_matrix: results.ground_truth_matrix,
+        adjacency_matrix: groundTruthMatrix,
         node_names: results.node_names,
-        parameters: { threshold: 0.5 }
+        parameters: { threshold: isWeighted ? 0.001 : 0.5 }
     };
     
-    createHeatmapVisualization(container, groundTruthResults, 'Ground Truth Matrix', 'ground_truth');
+    const title = isWeighted ? 'Ground Truth Matrix (Weighted)' : 'Ground Truth Matrix';
+    createHeatmapVisualization(container, groundTruthResults, title, 'ground_truth');
 }
 
 // Update comparison statistics
@@ -1063,10 +1073,13 @@ async function exportSingleVisualization(exportType, vizType, width, height, fil
         targetContainer = await createTemporaryVisualization(currentResults, vizType, 'learned');
     } else if (exportType === 'groundtruth') {
         // Create temporary visualization for ground truth
+        const groundTruthMatrix = currentResults.ground_truth_matrix_weighted || currentResults.ground_truth_matrix;
+        const isWeighted = currentResults.ground_truth_matrix_weighted !== null && currentResults.ground_truth_matrix_weighted !== undefined;
+        
         const groundTruthResults = {
-            adjacency_matrix: currentResults.ground_truth_matrix,
+            adjacency_matrix: groundTruthMatrix,
             node_names: currentResults.node_names,
-            parameters: { threshold: 0.5 }
+            parameters: { threshold: isWeighted ? 0.001 : 0.5 }
         };
         targetContainer = await createTemporaryVisualization(groundTruthResults, vizType, 'ground_truth');
     }
@@ -1129,10 +1142,13 @@ async function exportSideBySideComparison(vizType, width, height, filename) {
         }
         
         // Create ground truth visualization
+        const groundTruthMatrix = currentResults.ground_truth_matrix_weighted || currentResults.ground_truth_matrix;
+        const isWeighted = currentResults.ground_truth_matrix_weighted !== null && currentResults.ground_truth_matrix_weighted !== undefined;
+        
         const groundTruthResults = {
-            adjacency_matrix: currentResults.ground_truth_matrix,
+            adjacency_matrix: groundTruthMatrix,
             node_names: currentResults.node_names,
-            parameters: { threshold: 0.5 }
+            parameters: { threshold: isWeighted ? 0.001 : 0.5 }
         };
         
         if (vizType === 'graph') {

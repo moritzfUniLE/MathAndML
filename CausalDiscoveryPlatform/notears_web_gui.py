@@ -38,6 +38,7 @@ class NOTEARSWebApp:
         self.current_dataset = None
         self.current_data = None
         self.current_ground_truth = None
+        self.current_ground_truth_weighted = None  # Store weighted adjacency matrix
         self.current_node_names = None
         self.last_result = None
         # Session-based algorithm execution tracking
@@ -106,11 +107,25 @@ class NOTEARSWebApp:
                     
                     # Load ground truth if available
                     bif_file = os.path.join("datasets", dataset_name, f"{dataset_name}.bif")
+                    weights_file = os.path.join("datasets", dataset_name, f"{dataset_name}_weights.csv")
+                    
+                    self.current_ground_truth = None
+                    self.current_ground_truth_weighted = None
+                    
                     if os.path.exists(bif_file):
                         W_true, node_names, success = load_ground_truth_from_bif(bif_file)
                         if success:
                             self.current_ground_truth = W_true
                             self.current_node_names = node_names
+                            
+                            # Load weighted adjacency matrix if available (for synthetic datasets)
+                            if os.path.exists(weights_file):
+                                try:
+                                    self.current_ground_truth_weighted = np.loadtxt(weights_file, delimiter=',', skiprows=1)
+                                    print(f"[INFO] Loaded weighted ground truth: {weights_file}")
+                                except Exception as e:
+                                    print(f"[WARNING] Could not load weights file: {e}")
+                                    self.current_ground_truth_weighted = None
                     
                     # Load dataset info
                     info_file = os.path.join("datasets", dataset_name, "info.json")
@@ -312,11 +327,15 @@ class NOTEARSWebApp:
                 csv_file = os.path.join(dataset_dir, f"{dataset_name}_data.csv")
                 df.to_csv(csv_file, index=False)
                 
-                # Generate and save BIF file
-                bif_content = adjacency_matrix_to_bif(W_true, node_names)
+                # Generate and save BIF file (binary structure for compatibility)
+                bif_content = adjacency_matrix_to_bif((W_true != 0).astype(int), node_names)
                 bif_file = os.path.join(dataset_dir, f"{dataset_name}.bif")
                 with open(bif_file, 'w') as f:
                     f.write(bif_content)
+                
+                # Save weighted adjacency matrix separately for rich visualization
+                weights_file = os.path.join(dataset_dir, f"{dataset_name}_weights.csv")
+                np.savetxt(weights_file, W_true, delimiter=',', header=','.join(node_names), comments='')
                 
                 # Calculate actual edge count from ground truth
                 actual_edges = int(np.sum(W_true != 0))
@@ -1057,6 +1076,7 @@ class NOTEARSWebApp:
             self.last_result = {
                 'adjacency_matrix': W_learned.tolist(),
                 'ground_truth_matrix': self.current_ground_truth.tolist() if self.current_ground_truth is not None else None,
+                'ground_truth_matrix_weighted': self.current_ground_truth_weighted.tolist() if self.current_ground_truth_weighted is not None else None,
                 'node_names': self.current_node_names or [f"X{i}" for i in range(X.shape[1])],
                 'runtime': runtime,
                 'learned_edges': n_learned_edges,

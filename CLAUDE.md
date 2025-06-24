@@ -84,9 +84,17 @@ CausalDiscoveryPlatform/
 ### Implementation Details
 - **Backend**: `create_artifical_dataset()` in notears_utils.py
 - **BIF Generation**: `adjacency_matrix_to_bif()` converts ground truth to BIF format
+- **Weight Storage**: Separate `_weights.csv` file preserves exact edge weights for visualization
 - **API Endpoint**: `/api/generate_synthetic_dataset` for dataset creation
 - **Frontend**: Dual-mode modal (Upload vs Generate) with parameter validation
 - **Integration**: Generated datasets work seamlessly with existing visualization/evaluation
+
+### Weighted Ground Truth Visualization
+- **Binary BIF**: Maintains compatibility with evaluation metrics (precision, recall, F1)
+- **Weighted CSV**: Preserves original edge weights for rich heatmap visualization
+- **Automatic Detection**: Frontend automatically uses weighted matrices when available
+- **Visual Distinction**: Titles indicate "Weighted" vs standard ground truth
+- **Export Support**: Both weighted and binary versions available in export functions
 
 ### Benefits
 - Known ground truth enables performance evaluation
