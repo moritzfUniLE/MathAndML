@@ -59,6 +59,11 @@ data/saved_results/*
 data/trashcan/*
 !data/trashcan/.gitkeep
 
+# AVICI conda environment and installation files
+miniconda.sh
+miniconda/
+cache/
+
 # Temporary files
 *.tmp
 *.temp

@@ -47,7 +47,8 @@ class AVICI(BaseAlgorithm):
             'download': "scm-v0",
             'timeout': 300,
             'max_samples': 5000,
-            'memory_limit_gb': 8
+            'memory_limit_gb': 8,
+            'threshold': 0.01
         }
     
     def get_parameter_definitions(self) -> Dict[str, Dict[str, Any]]:
@@ -79,6 +80,14 @@ class AVICI(BaseAlgorithm):
                 'min': 2,
                 'max': 32,
                 'description': 'Memory limit in GB (helps with resource management)'
+            },
+            'threshold': {
+                'type': 'float',
+                'default': 0.01,
+                'min': 0.0,
+                'max': 1.0,
+                'step': 0.001,
+                'description': 'Threshold for edge detection (edges below this value are set to zero)'
             }
         }
     
@@ -86,7 +95,7 @@ class AVICI(BaseAlgorithm):
         """Validate AVICI parameters."""
         try:
             # Check required parameters exist
-            required_params = ['download', 'timeout', 'max_samples', 'memory_limit_gb']
+            required_params = ['download', 'timeout', 'max_samples', 'memory_limit_gb', 'threshold']
             for param in required_params:
                 if param not in params:
                     return False
@@ -105,6 +114,10 @@ class AVICI(BaseAlgorithm):
             
             # Validate memory_limit_gb
             if not isinstance(params['memory_limit_gb'], int) or params['memory_limit_gb'] < 2 or params['memory_limit_gb'] > 32:
+                return False
+            
+            # Validate threshold
+            if not isinstance(params['threshold'], (int, float)) or params['threshold'] < 0.0 or params['threshold'] > 1.0:
                 return False
             
             return True
@@ -269,27 +282,32 @@ class AVICI(BaseAlgorithm):
                 
                 W = np.load(output_file)
                 
+                # Apply post-processing (thresholding) using base class method
+                W_processed = self.postprocess_result(W, params)
+                
                 # Final progress update
                 if progress_callback:
                     progress_callback(
                         100, 1.0,
                         {
                             "status": "completed",
-                            "message": f"AVICI completed successfully. Matrix shape: {W.shape}",
+                            "message": f"AVICI completed successfully. Matrix shape: {W_processed.shape}",
                             "result_info": {
-                                "shape": W.shape,
-                                "non_zero_edges": int(np.sum(np.abs(W) > 1e-6)),
-                                "execution_time": time.time() - start_time
+                                "shape": W_processed.shape,
+                                "non_zero_edges": int(np.sum(np.abs(W_processed) > 1e-6)),
+                                "execution_time": time.time() - start_time,
+                                "threshold_applied": params.get('threshold', 0.0)
                             }
                         }
                     )
                 
                 print(f"[INFO] AVICI completed successfully!")
-                print(f"[INFO] Output matrix shape: {W.shape}")
-                print(f"[INFO] Non-zero edges: {np.sum(np.abs(W) > 1e-6)}")
+                print(f"[INFO] Output matrix shape: {W_processed.shape}")
+                print(f"[INFO] Non-zero edges: {np.sum(np.abs(W_processed) > 1e-6)}")
+                print(f"[INFO] Threshold applied: {params.get('threshold', 0.0)}")
                 print(f"[INFO] Execution time: {time.time() - start_time:.2f}s")
                 
-                return W
+                return W_processed
                 
             except Exception as e:
                 if progress_callback:
