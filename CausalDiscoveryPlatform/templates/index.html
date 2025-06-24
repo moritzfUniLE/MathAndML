@@ -194,11 +194,8 @@
                                                 <button class="btn btn-outline-primary btn-sm me-2" onclick="exportResults('csv')">
                                                     <i class="fas fa-file-csv me-1"></i>CSV
                                                 </button>
-                                                <button class="btn btn-outline-primary btn-sm me-2" onclick="exportResults('json')">
+                                                <button class="btn btn-outline-primary btn-sm" onclick="exportResults('json')">
                                                     <i class="fas fa-file-code me-1"></i>JSON
-                                                </button>
-                                                <button class="btn btn-outline-primary btn-sm" onclick="exportResults('png')">
-                                                    <i class="fas fa-image me-1"></i>PNG
                                                 </button>
                                             </div>
                                         </div>
@@ -780,8 +777,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <!-- Plotly -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <!-- html2canvas for side-by-side export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
