@@ -376,14 +376,35 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Upload Steps -->
-                    <div class="row">
-                        <div class="col-md-8">
-                            <!-- Step 1: Upload Files -->
-                            <div class="card mb-3">
-                                <div class="card-header">
-                                    <h6><i class="fas fa-upload me-1"></i>Step 1: Upload Files</h6>
+                    <!-- Mode Selection -->
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="btn-group w-100" role="group" aria-label="Dataset creation mode">
+                                        <input type="radio" class="btn-check" name="datasetMode" id="uploadMode" value="upload" checked onchange="switchDatasetMode('upload')">
+                                        <label class="btn btn-outline-primary" for="uploadMode">
+                                            <i class="fas fa-upload me-1"></i>Upload Dataset
+                                        </label>
+                                        <input type="radio" class="btn-check" name="datasetMode" id="generateMode" value="generate" onchange="switchDatasetMode('generate')">
+                                        <label class="btn btn-outline-primary" for="generateMode">
+                                            <i class="fas fa-magic me-1"></i>Generate Synthetic Dataset
+                                        </label>
+                                    </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Mode Content -->
+                    <div id="uploadModeContent">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <!-- Step 1: Upload Files -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-upload me-1"></i>Step 1: Upload Files</h6>
+                                    </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-6">
@@ -458,6 +479,146 @@
                                     <div id="datasetStats" style="display: none;">
                                         <h6>Dataset Statistics:</h6>
                                         <div id="statsContent"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    
+                    <!-- Generate Mode Content -->
+                    <div id="generateModeContent" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <!-- Synthetic Dataset Parameters -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-magic me-1"></i>Synthetic Dataset Parameters</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="syntheticSamples" class="form-label">Number of Samples (n):</label>
+                                                    <input type="number" class="form-control" id="syntheticSamples" value="1000" min="10" max="10000" onchange="validateSyntheticParams()">
+                                                    <small class="form-text text-muted">Number of data points to generate (10 - 10,000)</small>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label for="syntheticNodes" class="form-label">Number of Nodes (d):</label>
+                                                    <input type="number" class="form-control" id="syntheticNodes" value="10" min="2" max="50" onchange="validateSyntheticParams()">
+                                                    <small class="form-text text-muted">Number of variables in the graph (2 - 50)</small>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="syntheticEdges" class="form-label">Expected Number of Edges (s0):</label>
+                                                    <input type="number" class="form-control" id="syntheticEdges" value="20" min="1" max="2450" onchange="validateSyntheticParams()">
+                                                    <small class="form-text text-muted">Target number of causal edges</small>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label for="syntheticGraphType" class="form-label">Graph Type:</label>
+                                                    <select class="form-select" id="syntheticGraphType" onchange="validateSyntheticParams()">
+                                                        <option value="ER">Erdős–Rényi (ER) - Random graph</option>
+                                                        <option value="SF">Scale-Free (SF) - Barabási–Albert</option>
+                                                        <option value="BP">Bipartite (BP) - Hierarchical structure</option>
+                                                    </select>
+                                                    <small class="form-text text-muted">Topology of the generated graph</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="syntheticSemType" class="form-label">Noise Distribution (SEM Type):</label>
+                                                    <select class="form-select" id="syntheticSemType" onchange="validateSyntheticParams()">
+                                                        <option value="gauss">Gaussian - Normal distribution</option>
+                                                        <option value="exp">Exponential - Right-skewed</option>
+                                                        <option value="gumbel">Gumbel - Extreme values</option>
+                                                        <option value="uniform">Uniform - Equal probability</option>
+                                                        <option value="logistic">Logistic - Binary outcomes</option>
+                                                        <option value="poisson">Poisson - Count data</option>
+                                                    </select>
+                                                    <small class="form-text text-muted">Type of noise in the data generation process</small>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Generation Preview:</label>
+                                                    <div class="border rounded p-2 bg-light" id="syntheticPreview">
+                                                        <small class="text-muted">
+                                                            <strong>Dataset:</strong> <span id="previewSamples">1000</span> samples × <span id="previewNodes">10</span> variables<br>
+                                                            <strong>Graph:</strong> <span id="previewGraphType">Erdős–Rényi</span> with ~<span id="previewEdges">20</span> edges<br>
+                                                            <strong>Noise:</strong> <span id="previewSemType">Gaussian</span> distribution
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Parameter Validation Messages -->
+                                        <div id="syntheticValidation" class="alert alert-info" style="display: none;">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            <span id="syntheticValidationMessage">Parameters are valid</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Synthetic Dataset Information -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-info-circle me-1"></i>About Synthetic Generation</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>Graph Types:</h6>
+                                                <ul class="small">
+                                                    <li><strong>Erdős–Rényi (ER):</strong> Random connections between nodes</li>
+                                                    <li><strong>Scale-Free (SF):</strong> Power-law degree distribution (hubs)</li>
+                                                    <li><strong>Bipartite (BP):</strong> Hierarchical two-layer structure</li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>Benefits:</h6>
+                                                <ul class="small">
+                                                    <li>Known ground truth for evaluation</li>
+                                                    <li>Controlled complexity testing</li>
+                                                    <li>Algorithm benchmarking</li>
+                                                    <li>Parameter sensitivity analysis</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Sidebar: Dataset Configuration (Synthetic) -->
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-cog me-1"></i>Dataset Configuration</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="syntheticDatasetName" class="form-label">Dataset Name:</label>
+                                            <input type="text" class="form-control" id="syntheticDatasetName" placeholder="e.g., synthetic_er_10nodes">
+                                            <small class="form-text text-muted">Used for saving the generated dataset</small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="syntheticDescription" class="form-label">Description:</label>
+                                            <textarea class="form-control" id="syntheticDescription" rows="3" placeholder="Describe the synthetic dataset..."></textarea>
+                                        </div>
+                                        
+                                        <div class="alert alert-success">
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            <strong>Ground Truth Included:</strong> The true causal structure will be automatically saved as a BIF file for evaluation purposes.
+                                        </div>
                                     </div>
                                 </div>
                             </div>

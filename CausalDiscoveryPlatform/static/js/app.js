@@ -2485,10 +2485,341 @@ async function permanentlyDeleteDataset(datasetName) {
 }
 
 
+// =================== SYNTHETIC DATASET GENERATION FUNCTIONS ===================
+
+// Switch between upload and generate modes
+function switchDatasetMode(mode) {
+    const uploadContent = document.getElementById('uploadModeContent');
+    const generateContent = document.getElementById('generateModeContent');
+    
+    if (mode === 'upload') {
+        uploadContent.style.display = 'block';
+        generateContent.style.display = 'none';
+        // Reset upload mode state
+        checkSaveReadiness();
+    } else if (mode === 'generate') {
+        uploadContent.style.display = 'none';
+        generateContent.style.display = 'block';
+        // Validate synthetic parameters and enable save if valid
+        validateSyntheticParams();
+        updateSyntheticPreview();
+    }
+}
+
+// Validate synthetic dataset parameters
+function validateSyntheticParams() {
+    const samples = parseInt(document.getElementById('syntheticSamples').value);
+    const nodes = parseInt(document.getElementById('syntheticNodes').value);
+    const edges = parseInt(document.getElementById('syntheticEdges').value);
+    const graphType = document.getElementById('syntheticGraphType').value;
+    const semType = document.getElementById('syntheticSemType').value;
+    const name = document.getElementById('syntheticDatasetName').value.trim();
+    
+    const validationDiv = document.getElementById('syntheticValidation');
+    const messageSpan = document.getElementById('syntheticValidationMessage');
+    const saveBtn = document.getElementById('saveDatasetBtn');
+    
+    let errors = [];
+    let warnings = [];
+    
+    // Validate parameters
+    if (samples < 10 || samples > 10000) {
+        errors.push('Number of samples must be between 10 and 10,000');
+    }
+    
+    if (nodes < 2 || nodes > 50) {
+        errors.push('Number of nodes must be between 2 and 50');
+    }
+    
+    const maxEdges = nodes * (nodes - 1);
+    if (edges < 1 || edges > maxEdges) {
+        errors.push(`Number of edges must be between 1 and ${maxEdges} for ${nodes} nodes`);
+    }
+    
+    if (edges > nodes * 2) {
+        warnings.push('High edge density may result in complex graphs');
+    }
+    
+    if (!name) {
+        errors.push('Dataset name is required');
+    }
+    
+    // Update validation display
+    if (errors.length > 0) {
+        validationDiv.className = 'alert alert-danger';
+        validationDiv.style.display = 'block';
+        messageSpan.innerHTML = '<strong>Errors:</strong> ' + errors.join(', ');
+        saveBtn.disabled = true;
+    } else if (warnings.length > 0) {
+        validationDiv.className = 'alert alert-warning';
+        validationDiv.style.display = 'block';
+        messageSpan.innerHTML = '<strong>Warnings:</strong> ' + warnings.join(', ');
+        saveBtn.disabled = false;
+    } else {
+        validationDiv.className = 'alert alert-success';
+        validationDiv.style.display = 'block';
+        messageSpan.innerHTML = 'All parameters are valid. Ready to generate!';
+        saveBtn.disabled = false;
+    }
+    
+    // Update max edges constraint
+    document.getElementById('syntheticEdges').max = maxEdges;
+    
+    updateSyntheticPreview();
+}
+
+// Update synthetic dataset preview
+function updateSyntheticPreview() {
+    const samples = document.getElementById('syntheticSamples').value;
+    const nodes = document.getElementById('syntheticNodes').value;
+    const edges = document.getElementById('syntheticEdges').value;
+    const graphType = document.getElementById('syntheticGraphType').value;
+    const semType = document.getElementById('syntheticSemType').value;
+    
+    // Update preview spans
+    document.getElementById('previewSamples').textContent = samples;
+    document.getElementById('previewNodes').textContent = nodes;
+    document.getElementById('previewEdges').textContent = edges;
+    document.getElementById('previewSemType').textContent = getSemTypeDisplayName(semType);
+    document.getElementById('previewGraphType').textContent = getGraphTypeDisplayName(graphType);
+    
+    // Auto-generate dataset name if empty
+    const nameInput = document.getElementById('syntheticDatasetName');
+    if (!nameInput.value.trim()) {
+        const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        nameInput.value = `synthetic_${graphType.toLowerCase()}_${nodes}n_${edges}e_${timestamp}`;
+    }
+}
+
+// Get display name for SEM type
+function getSemTypeDisplayName(semType) {
+    const displayNames = {
+        'gauss': 'Gaussian',
+        'exp': 'Exponential',
+        'gumbel': 'Gumbel',
+        'uniform': 'Uniform',
+        'logistic': 'Logistic',
+        'poisson': 'Poisson'
+    };
+    return displayNames[semType] || semType;
+}
+
+// Get display name for graph type
+function getGraphTypeDisplayName(graphType) {
+    const displayNames = {
+        'ER': 'Erdős–Rényi',
+        'SF': 'Scale-Free',
+        'BP': 'Bipartite'
+    };
+    return displayNames[graphType] || graphType;
+}
+
+// Generate synthetic dataset
+async function generateSyntheticDataset() {
+    const payload = {
+        dataset_name: document.getElementById('syntheticDatasetName').value.trim(),
+        description: document.getElementById('syntheticDescription').value.trim(),
+        n_samples: parseInt(document.getElementById('syntheticSamples').value),
+        n_nodes: parseInt(document.getElementById('syntheticNodes').value),
+        n_edges: parseInt(document.getElementById('syntheticEdges').value),
+        graph_type: document.getElementById('syntheticGraphType').value,
+        sem_type: document.getElementById('syntheticSemType').value
+    };
+    
+    try {
+        updateStatus('Generating synthetic dataset...', 'running');
+        
+        const response = await fetch('/api/generate_synthetic_dataset', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert(result.message, 'success');
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('datasetUploadModal'));
+            modal.hide();
+            
+            // Reset modal to upload mode for next time
+            document.getElementById('uploadMode').checked = true;
+            switchDatasetMode('upload');
+            resetModalToCreateMode();
+            
+            // Refresh dataset list
+            await loadAvailableDatasets();
+            
+            // Select the new dataset
+            document.getElementById('datasetSelect').value = payload.dataset_name;
+            await loadSelectedDataset();
+            
+            updateStatus('Synthetic dataset generated successfully', 'ready');
+            addLogMessage(`Generated synthetic dataset: ${payload.dataset_name}`, 'success');
+            addLogMessage(`Parameters: ${payload.n_nodes} nodes, ${result.info.edges} actual edges, ${payload.graph_type} graph, ${payload.sem_type} noise`, 'info');
+            
+        } else {
+            showAlert(`Error generating dataset: ${result.error}`, 'danger');
+            updateStatus('Error generating dataset', 'error');
+        }
+        
+    } catch (error) {
+        showAlert(`Error generating dataset: ${error.message}`, 'danger');
+        updateStatus('Error', 'error');
+        addLogMessage(`Error generating dataset: ${error.message}`, 'error');
+    }
+}
+
+// Modified save function to handle both upload and generate modes
+async function saveOrUpdateDataset() {
+    const isGenerateMode = document.getElementById('generateMode').checked;
+    
+    if (isGenerateMode) {
+        await generateSyntheticDataset();
+    } else {
+        // Call the existing upload dataset save function
+        await saveOrUpdateUploadDataset();
+    }
+}
+
+// Renamed the original save function
+async function saveOrUpdateUploadDataset() {
+    const datasetName = document.getElementById('datasetName').value.trim();
+    const description = document.getElementById('datasetDescription').value.trim();
+    const isEditMode = document.getElementById('editMode').value === 'true';
+    
+    if (!datasetName || !uploadedCSVData) {
+        showAlert('Please provide a dataset name and valid CSV data.', 'warning');
+        return;
+    }
+    
+    try {
+        let response, result;
+        
+        if (isEditMode) {
+            // Update metadata only (description and BIF)
+            const payload = {
+                description: description,
+                bif_content: uploadedBIFContent || ''
+            };
+            
+            response = await fetch(`/api/update_dataset_metadata/${datasetName}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+        } else {
+            // Create new dataset
+            const payload = {
+                dataset_name: datasetName,
+                description: description,
+                csv_data: uploadedCSVData,
+                bif_content: uploadedBIFContent || ''
+            };
+            
+            response = await fetch('/api/save_dataset', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+        }
+        
+        result = await response.json();
+        
+        if (result.success) {
+            showAlert(result.message, 'success');
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('datasetUploadModal'));
+            modal.hide();
+            
+            // Reset modal to create mode
+            resetModalToCreateMode();
+            
+            // Refresh dataset list
+            await loadAvailableDatasets();
+            
+            // Select the dataset
+            document.getElementById('datasetSelect').value = datasetName;
+            if (currentDataset && currentDataset.dataset_name === datasetName) {
+                await loadSelectedDataset(); // Refresh if it's the current dataset
+            }
+            
+        } else {
+            showAlert(`Error ${isEditMode ? 'updating' : 'saving'} dataset: ${result.error}`, 'danger');
+        }
+    } catch (error) {
+        showAlert(`Error ${isEditMode ? 'updating' : 'saving'} dataset: ${error.message}`, 'danger');
+    }
+}
+
+// Modified reset function to handle both modes
+function resetModalToCreateMode() {
+    // Reset edit mode flags
+    document.getElementById('editMode').value = 'false';
+    document.getElementById('originalDatasetName').value = '';
+    
+    // Reset modal title and button
+    document.getElementById('datasetModalTitle').innerHTML = '<i class="fas fa-database me-2"></i>Create New Dataset';
+    document.getElementById('saveButtonText').textContent = 'Save Dataset';
+    document.getElementById('deleteDatasetBtn').style.display = 'none';
+    
+    // Reset to upload mode
+    document.getElementById('uploadMode').checked = true;
+    switchDatasetMode('upload');
+    
+    // Reset upload mode fields
+    document.getElementById('csvUpload').value = '';
+    document.getElementById('bifUpload').value = '';
+    document.getElementById('datasetName').value = '';
+    document.getElementById('datasetName').disabled = false;
+    document.getElementById('datasetDescription').value = '';
+    
+    // Reset CSV upload state
+    document.getElementById('csvUpload').disabled = false;
+    document.getElementById('csvUploadHelp').style.display = 'block';
+    document.getElementById('csvEditNotice').style.display = 'none';
+    
+    // Hide sections
+    document.getElementById('validationCard').style.display = 'none';
+    document.getElementById('previewCard').style.display = 'none';
+    document.getElementById('bifPreview').style.display = 'none';
+    document.getElementById('datasetStats').style.display = 'none';
+    document.getElementById('saveDatasetBtn').disabled = true;
+    
+    // Reset synthetic mode fields
+    document.getElementById('syntheticDatasetName').value = '';
+    document.getElementById('syntheticDescription').value = '';
+    document.getElementById('syntheticSamples').value = '1000';
+    document.getElementById('syntheticNodes').value = '10';
+    document.getElementById('syntheticEdges').value = '20';
+    document.getElementById('syntheticGraphType').value = 'ER';
+    document.getElementById('syntheticSemType').value = 'gauss';
+    document.getElementById('syntheticValidation').style.display = 'none';
+    
+    // Reset data
+    uploadedCSVData = null;
+    uploadedBIFContent = null;
+}
+
 // Add event listener for dataset name input
 document.addEventListener('DOMContentLoaded', function() {
     const nameInput = document.getElementById('datasetName');
     if (nameInput) {
         nameInput.addEventListener('input', checkSaveReadiness);
+    }
+    
+    // Add event listener for synthetic dataset name input
+    const syntheticNameInput = document.getElementById('syntheticDatasetName');
+    if (syntheticNameInput) {
+        syntheticNameInput.addEventListener('input', validateSyntheticParams);
     }
 });

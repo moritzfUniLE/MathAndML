@@ -69,8 +69,34 @@ CausalDiscoveryPlatform/
 - Windows compatibility via conda (recommended)
 - Comprehensive error handling and logging
 
+## Synthetic Dataset Generation
+
+### New Feature: Built-in Synthetic Data Generation
+- **Purpose**: Generate datasets with known ground truth for algorithm testing
+- **Access**: "Create New Dataset" → "Generate Synthetic Dataset" mode
+- **Parameters**:
+  - Number of samples (n): 10-10,000 data points
+  - Number of nodes (d): 2-50 variables 
+  - Expected edges (s0): Target number of causal connections
+  - Graph types: Erdős–Rényi (ER), Scale-Free (SF), Bipartite (BP)
+  - Noise distributions: Gaussian, Exponential, Gumbel, Uniform, Logistic, Poisson
+
+### Implementation Details
+- **Backend**: `create_artifical_dataset()` in notears_utils.py
+- **BIF Generation**: `adjacency_matrix_to_bif()` converts ground truth to BIF format
+- **API Endpoint**: `/api/generate_synthetic_dataset` for dataset creation
+- **Frontend**: Dual-mode modal (Upload vs Generate) with parameter validation
+- **Integration**: Generated datasets work seamlessly with existing visualization/evaluation
+
+### Benefits
+- Known ground truth enables performance evaluation
+- Controlled complexity for algorithm benchmarking  
+- Parameter sensitivity analysis capabilities
+- Educational tool for understanding causal structures
+
 ## Performance Considerations
 - Memory usage scales with dataset size and hidden units
 - Iteration monitoring via h-value convergence
 - Parameter sensitivity requires tuning
 - Large datasets (>50 variables) may need optimization
+- Synthetic generation: O(n*d) time complexity, recommended limits enforced

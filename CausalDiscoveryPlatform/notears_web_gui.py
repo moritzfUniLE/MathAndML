@@ -22,7 +22,7 @@ import plotly.express as px
 from plotly.utils import PlotlyJSONEncoder
 
 # Import NOTEARS components
-from notears_utils import load_ground_truth_from_bif, compute_metrics, apply_threshold
+from notears_utils import load_ground_truth_from_bif, compute_metrics, apply_threshold, create_artifical_dataset, adjacency_matrix_to_bif
 from algorithms import get_available_algorithms, get_algorithm
 
 
@@ -251,6 +251,103 @@ class NOTEARSWebApp:
                     'success': True,
                     'message': f'Dataset "{dataset_name}" saved successfully',
                     'info': info
+                })
+                
+            except Exception as e:
+                return jsonify({'success': False, 'error': str(e)})
+        
+        @self.app.route('/api/generate_synthetic_dataset', methods=['POST'])
+        def generate_synthetic_dataset():
+            """Generate a synthetic dataset with specified parameters."""
+            try:
+                data = request.get_json()
+                
+                # Extract parameters
+                dataset_name = data.get('dataset_name', '').strip()
+                description = data.get('description', '').strip()
+                n_samples = int(data.get('n_samples', 1000))
+                n_nodes = int(data.get('n_nodes', 10))
+                n_edges = int(data.get('n_edges', 20))
+                graph_type = data.get('graph_type', 'ER')
+                sem_type = data.get('sem_type', 'gauss')
+                
+                # Validate parameters
+                if not dataset_name:
+                    return jsonify({'success': False, 'error': 'Dataset name is required'})
+                
+                if n_samples < 10 or n_samples > 10000:
+                    return jsonify({'success': False, 'error': 'Number of samples must be between 10 and 10,000'})
+                
+                if n_nodes < 2 or n_nodes > 50:
+                    return jsonify({'success': False, 'error': 'Number of nodes must be between 2 and 50'})
+                
+                if n_edges < 1 or n_edges > n_nodes * (n_nodes - 1):
+                    return jsonify({'success': False, 'error': f'Number of edges must be between 1 and {n_nodes * (n_nodes - 1)}'})
+                
+                if graph_type not in ['ER', 'SF', 'BP']:
+                    return jsonify({'success': False, 'error': 'Graph type must be ER, SF, or BP'})
+                
+                if sem_type not in ['gauss', 'exp', 'gumbel', 'uniform', 'logistic', 'poisson']:
+                    return jsonify({'success': False, 'error': 'SEM type must be one of: gauss, exp, gumbel, uniform, logistic, poisson'})
+                
+                # Check if dataset name already exists
+                dataset_dir = os.path.join('datasets', dataset_name)
+                if os.path.exists(dataset_dir):
+                    return jsonify({'success': False, 'error': f'Dataset "{dataset_name}" already exists'})
+                
+                # Generate synthetic dataset
+                try:
+                    X, W_true = create_artifical_dataset(n_samples, n_nodes, n_edges, graph_type, sem_type)
+                except Exception as e:
+                    return jsonify({'success': False, 'error': f'Failed to generate synthetic dataset: {str(e)}'})
+                
+                # Create dataset directory
+                os.makedirs(dataset_dir, exist_ok=True)
+                
+                # Generate node names
+                node_names = [f"X{i+1}" for i in range(n_nodes)]
+                
+                # Save CSV data
+                df = pd.DataFrame(X, columns=node_names)
+                csv_file = os.path.join(dataset_dir, f"{dataset_name}_data.csv")
+                df.to_csv(csv_file, index=False)
+                
+                # Generate and save BIF file
+                bif_content = adjacency_matrix_to_bif(W_true, node_names)
+                bif_file = os.path.join(dataset_dir, f"{dataset_name}.bif")
+                with open(bif_file, 'w') as f:
+                    f.write(bif_content)
+                
+                # Calculate actual edge count from ground truth
+                actual_edges = int(np.sum(W_true != 0))
+                
+                # Create info.json
+                info = {
+                    'name': dataset_name,
+                    'description': description or f'Synthetic {graph_type} graph with {sem_type} noise',
+                    'nodes': n_nodes,
+                    'edges': actual_edges,
+                    'samples': n_samples,
+                    'created_date': pd.Timestamp.now().isoformat(),
+                    'has_ground_truth': True,
+                    'synthetic': True,
+                    'generation_params': {
+                        'graph_type': graph_type,
+                        'sem_type': sem_type,
+                        'expected_edges': n_edges,
+                        'actual_edges': actual_edges
+                    }
+                }
+                
+                info_file = os.path.join(dataset_dir, 'info.json')
+                with open(info_file, 'w') as f:
+                    json.dump(info, f, indent=2)
+                
+                return jsonify({
+                    'success': True,
+                    'message': f'Synthetic dataset "{dataset_name}" generated successfully',
+                    'info': info,
+                    'preview': df.head(10).to_dict('records')
                 })
                 
             except Exception as e:
