@@ -44,6 +44,9 @@ class NOTEARSWebApp:
         self.running_sessions = {}  # Track running algorithms per session
         self.algorithm_threads = {}  # Track threads per session
         
+        # Fix: Add is_running attribute initialization
+        self.is_running = True
+
         # Setup routes and socket handlers
         self.setup_routes()
         self.setup_socket_handlers()

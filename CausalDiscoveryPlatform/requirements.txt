@@ -25,3 +25,6 @@ plotly>=5.17.0
 flask>=3.0.0     # Web framework
 flask-socketio>=5.3.0  # Real-time updates
 werkzeug>=3.0.0  # WSGI utilities
+
+# For synthetic graph creation
+igraph>=0.11.8
