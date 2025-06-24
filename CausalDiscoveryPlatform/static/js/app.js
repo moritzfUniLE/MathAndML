@@ -828,36 +828,64 @@ function updateComparisonStatistics() {
     const learnedBinary = learned.map(row => row.map(val => Math.abs(val) > threshold ? 1 : 0));
     const groundTruthBinary = groundTruth.map(row => row.map(val => val != 0 ? 1 : 0));
     
-    // Calculate edge statistics
+    // Calculate edge statistics with reversed edge detection
     let correctEdges = 0;
     let missedEdges = 0;
     let extraEdges = 0;
+    let reversedEdges = 0;
     let totalGroundTruthEdges = 0;
     let totalLearnedEdges = 0;
     
+    // Phase 1: Identify all reversed edge pairs
+    const reversedEdgeMap = new Set();
+    for (let i = 0; i < learned.length; i++) {
+        for (let j = 0; j < learned[i].length; j++) {
+            if (i !== j) {
+                // Check if GT has i→j but L has j→i (and not i→j) - this is a reversal
+                if (groundTruthBinary[i][j] === 1 && 
+                    learnedBinary[i][j] === 0 && 
+                    learnedBinary[j][i] === 1) {
+                    reversedEdgeMap.add(`${i}-${j}`);
+                    reversedEdgeMap.add(`${j}-${i}`); // Mark both directions as part of reversal
+                }
+            }
+        }
+    }
+    
+    // Count reversed edges (each reversal involves 2 directed edges, so divide by 2)
+    reversedEdges = reversedEdgeMap.size / 2;
+    
+    // Phase 2: Count all other metrics, excluding those part of reversals
     for (let i = 0; i < learned.length; i++) {
         for (let j = 0; j < learned[i].length; j++) {
             if (i !== j) { // Exclude diagonal
                 const learnedEdge = learnedBinary[i][j];
                 const trueEdge = groundTruthBinary[i][j];
+                const edgeKey = `${i}-${j}`;
+                const isPartOfReversal = reversedEdgeMap.has(edgeKey);
                 
+                // Count total edges
                 if (trueEdge === 1) {
                     totalGroundTruthEdges++;
-                    if (learnedEdge === 1) {
-                        correctEdges++;
-                    } else {
-                        missedEdges++;
-                    }
-                } else if (learnedEdge === 1) {
-                    extraEdges++;
                 }
-                
                 if (learnedEdge === 1) {
                     totalLearnedEdges++;
+                }
+                
+                // Classify edges
+                if (trueEdge === 1 && learnedEdge === 1) {
+                    correctEdges++;
+                } else if (trueEdge === 1 && learnedEdge === 0 && !isPartOfReversal) {
+                    missedEdges++;
+                } else if (trueEdge === 0 && learnedEdge === 1 && !isPartOfReversal) {
+                    extraEdges++;
                 }
             }
         }
     }
+    
+    // Calculate Structural Hamming Distance (SHD)
+    const shd = missedEdges + extraEdges + 2 * reversedEdges;
     
     const edgeAccuracy = totalGroundTruthEdges > 0 ? (correctEdges / totalGroundTruthEdges * 100).toFixed(1) + '%' : 'N/A';
     
@@ -866,6 +894,17 @@ function updateComparisonStatistics() {
     document.getElementById('missedEdges').textContent = missedEdges;
     document.getElementById('extraEdges').textContent = extraEdges;
     document.getElementById('edgeAccuracy').textContent = edgeAccuracy;
+    
+    // Update new metrics (check if elements exist first)
+    const reversedEdgesElement = document.getElementById('reversedEdges');
+    if (reversedEdgesElement) {
+        reversedEdgesElement.textContent = reversedEdges;
+    }
+    
+    const shdElement = document.getElementById('shd');
+    if (shdElement) {
+        shdElement.textContent = shd;
+    }
     
     document.getElementById('comparisonStats').style.display = 'block';
 }
