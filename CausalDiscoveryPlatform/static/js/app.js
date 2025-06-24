@@ -560,7 +560,7 @@ function createGraphVisualization(container, results, title = 'Causal Graph', ty
     const edges = [];
     for (let i = 0; i < adjMatrix.length; i++) {
         for (let j = 0; j < adjMatrix[i].length; j++) {
-            if (adjMatrix[i][j] > threshold) {
+            if (Math.abs(adjMatrix[i][j]) > threshold) {
                 edges.push({
                     source: i,
                     target: j,
@@ -825,8 +825,8 @@ function updateComparisonStatistics() {
     const threshold = currentResults.parameters.threshold;
     
     // Convert to binary matrices
-    const learnedBinary = learned.map(row => row.map(val => val > threshold ? 1 : 0));
-    const groundTruthBinary = groundTruth.map(row => row.map(val => val > 0 ? 1 : 0));
+    const learnedBinary = learned.map(row => row.map(val => Math.abs(val) > threshold ? 1 : 0));
+    const groundTruthBinary = groundTruth.map(row => row.map(val => val != 0 ? 1 : 0));
     
     // Calculate edge statistics
     let correctEdges = 0;
