@@ -11,6 +11,13 @@ try:
 except ImportError:
     bnlearn_algorithms = []
 
+# Import AVICI algorithm
+try:
+    from .avici_algorithm import AVICI
+    avici_available = True
+except ImportError:
+    avici_available = False
+
 from .algorithm_registry import (
     algorithm_registry,
     get_available_algorithms,
@@ -27,3 +34,6 @@ __all__ = [
     'get_algorithm',
     'register_algorithm'
 ] + [alg.__name__ for alg in bnlearn_algorithms]
+
+if avici_available:
+    __all__.append('AVICI')
