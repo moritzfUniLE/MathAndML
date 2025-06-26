@@ -518,6 +518,14 @@ td[contenteditable="true"]:focus {
     text-decoration: underline;
 }
 
+.reference-title {
+    color: #6c757d;
+    font-size: 0.88rem;
+    font-style: italic;
+    margin-top: 0.25rem;
+    line-height: 1.4;
+}
+
 .references-footer {
     background-color: #e9ecef;
     border-radius: 6px;
@@ -575,6 +583,10 @@ td[contenteditable="true"]:focus {
         font-size: 0.85rem;
     }
     
+    .reference-title {
+        font-size: 0.83rem;
+    }
+    
     .references-title {
         font-size: 1rem;
         margin-bottom: 1rem;
@@ -625,5 +637,9 @@ td[contenteditable="true"]:focus {
     .reference-item em,
     .reference-link {
         font-size: 0.8rem;
+    }
+    
+    .reference-title {
+        font-size: 0.78rem;
     }
 }
