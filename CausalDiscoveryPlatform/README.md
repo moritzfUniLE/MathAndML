@@ -18,6 +18,7 @@ This platform provides a complete implementation of causal discovery algorithms 
 ### 🧠 **Multiple Causal Discovery Algorithms**
 - **NOTEARS Linear**: Fast linear structural equation models
 - **NOTEARS Nonlinear**: Neural network-based nonlinear relationships  
+- **AVICI**: Amortized Variational Inference for Causal Inference (neural networks)
 - **Hill Climbing (bnlearn)**: Score-based structure learning
 - **PC Algorithm (bnlearn)**: Constraint-based causal discovery
 - **Grow-Shrink (bnlearn)**: Efficient constraint-based learning
@@ -121,6 +122,16 @@ docker-compose up --build
 python launch_gui.py
 ```
 This will check all dependencies and launch the web interface. All 19 datasets (including bnlearn datasets) are pre-loaded and ready to use.
+
+### 5. Optional: Install AVICI Algorithm
+```bash
+# Automated installation (Linux/macOS/WSL)
+./scripts/install_avici.sh
+
+# Windows (after installing Miniconda)
+scripts\install_avici_windows.bat
+```
+For detailed AVICI installation instructions, see [docs/AVICI_INSTALLATION.md](docs/AVICI_INSTALLATION.md).
 
 ## Quick Start Guide
 

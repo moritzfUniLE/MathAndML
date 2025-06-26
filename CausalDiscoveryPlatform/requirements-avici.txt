@@ -1,0 +1,37 @@
+# AVICI Algorithm Dependencies
+# These must be installed in a separate Python 3.10 conda environment
+# due to PyArrow version conflicts with the main application
+
+# Core AVICI package
+avici==1.0.7
+
+# Required dependencies (automatically installed with avici)
+jax>=0.3.17
+jaxlib>=0.3.14
+tensorflow
+imageio
+jupyter
+matplotlib
+numpy<2
+pandas
+igraph
+scikit-learn
+tqdm
+dm-haiku>=0.0.8
+psutil
+optax
+pyarrow==10.0.1  # Critical: Must be exactly this version for plasma support
+tensorflow-datasets~=4.3.0
+deepdiff
+huggingface-hub
+
+# Python version requirement
+# python==3.10.*
+
+# Installation command for conda environment:
+# conda create -n avici_env python=3.10 -y
+# conda activate avici_env
+# pip install avici
+
+# Note: Do NOT install these in the main application environment
+# as they conflict with bnlearn dependencies (PyArrow version mismatch)
