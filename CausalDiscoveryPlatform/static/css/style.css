@@ -444,3 +444,186 @@ td[contenteditable="true"]:focus {
         min-width: 60px;
     }
 }
+
+/* =================== REFERENCES SECTION STYLES =================== */
+
+.references-section {
+    background-color: #f8f9fa !important;
+    border-top: 2px solid #dee2e6 !important;
+    margin-top: 3rem;
+}
+
+.references-title {
+    color: #495057;
+    font-weight: 600;
+    font-size: 1.25rem;
+    border-bottom: 2px solid #0d6efd;
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+.references-subtitle {
+    color: #6c757d;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.references-content {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+}
+
+.reference-item {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f1f3f4;
+    line-height: 1.5;
+}
+
+.reference-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.reference-item strong {
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+.reference-authors {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.reference-item em {
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.reference-link {
+    color: #0d6efd;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.reference-link:hover {
+    color: #0b5ed7;
+    text-decoration: underline;
+}
+
+.references-footer {
+    background-color: #e9ecef;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.references-footer small {
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* Responsive design for references section */
+@media (max-width: 992px) {
+    .references-content {
+        padding: 1rem;
+    }
+    
+    .reference-item {
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+    }
+    
+    .references-title {
+        font-size: 1.1rem;
+    }
+    
+    .references-subtitle {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .references-section {
+        margin-top: 2rem;
+    }
+    
+    .references-content {
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .reference-item {
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    .reference-item strong {
+        font-size: 0.9rem;
+    }
+    
+    .reference-authors,
+    .reference-item em,
+    .reference-link {
+        font-size: 0.85rem;
+    }
+    
+    .references-title {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .references-subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .references-footer {
+        padding: 0.75rem;
+    }
+    
+    .references-footer small {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .references-section .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .references-content {
+        padding: 0.5rem;
+    }
+    
+    .reference-item {
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.25rem;
+    }
+    
+    .references-title {
+        font-size: 0.95rem;
+    }
+    
+    .references-subtitle {
+        font-size: 0.85rem;
+    }
+    
+    .reference-item strong {
+        font-size: 0.85rem;
+    }
+    
+    .reference-authors,
+    .reference-item em,
+    .reference-link {
+        font-size: 0.8rem;
+    }
+}
