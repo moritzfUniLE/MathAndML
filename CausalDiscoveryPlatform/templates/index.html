@@ -547,7 +547,27 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label for="syntheticSemType" class="form-label">Noise Distribution (SEM Type):</label>
+                                                    <label class="form-label">SEM Mode:</label>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="semMode" id="semModeLinear" value="linear" checked onchange="toggleSemMode()">
+                                                        <label class="form-check-label" for="semModeLinear">
+                                                            Linear SEM
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="semMode" id="semModeNonlinear" value="nonlinear" onchange="toggleSemMode()">
+                                                        <label class="form-check-label" for="semModeNonlinear">
+                                                            Nonlinear SEM
+                                                        </label>
+                                                    </div>
+                                                    <small class="form-text text-muted">Choose between linear and nonlinear relationships</small>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                <!-- Linear SEM Type -->
+                                                <div class="mb-3" id="linearSemTypeContainer">
+                                                    <label for="syntheticSemType" class="form-label">Noise Distribution:</label>
                                                     <select class="form-select" id="syntheticSemType" onchange="validateSyntheticParams()">
                                                         <option value="gauss">Gaussian - Normal distribution</option>
                                                         <option value="exp">Exponential - Right-skewed</option>
@@ -558,7 +578,23 @@
                                                     </select>
                                                     <small class="form-text text-muted">Type of noise in the data generation process</small>
                                                 </div>
+                                                
+                                                <!-- Nonlinear SEM Type -->
+                                                <div class="mb-3" id="nonlinearSemTypeContainer" style="display: none;">
+                                                    <label for="syntheticNonlinearSemType" class="form-label">Nonlinear SEM Type:</label>
+                                                    <select class="form-select" id="syntheticNonlinearSemType" onchange="validateSyntheticParams()">
+                                                        <option value="mlp">MLP - Multi-layer perceptron</option>
+                                                        <option value="mim">MIM - Mixture of interactions</option>
+                                                        <option value="gp">GP - Gaussian process</option>
+                                                        <option value="gp-add">GP-ADD - Additive Gaussian process</option>
+                                                    </select>
+                                                    <small class="form-text text-muted">Type of nonlinear transformation function</small>
+                                                </div>
                                             </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6"></div>
                                             
                                             <div class="col-md-6">
                                                 <div class="mb-3">
@@ -567,7 +603,8 @@
                                                         <small class="text-muted">
                                                             <strong>Dataset:</strong> <span id="previewSamples">1000</span> samples × <span id="previewNodes">10</span> variables<br>
                                                             <strong>Graph:</strong> <span id="previewGraphType">Erdős–Rényi</span> with ~<span id="previewEdges">20</span> edges<br>
-                                                            <strong>Noise:</strong> <span id="previewSemType">Gaussian</span> distribution
+                                                            <strong>SEM Mode:</strong> <span id="previewSemMode">Linear</span><br>
+                                                            <strong>Type:</strong> <span id="previewSemTypeDisplay">Gaussian noise</span>
                                                         </small>
                                                     </div>
                                                 </div>

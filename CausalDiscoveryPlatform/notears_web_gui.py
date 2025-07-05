@@ -284,7 +284,9 @@ class NOTEARSWebApp:
                 n_nodes = int(data.get('n_nodes', 10))
                 n_edges = int(data.get('n_edges', 20))
                 graph_type = data.get('graph_type', 'ER')
-                sem_type = data.get('sem_type', 'gauss')
+                sem_mode = data.get('sem_mode', 'linear')
+                sem_type = data.get('sem_type', 'gauss')  # For linear mode
+                nonlinear_sem_type = data.get('nonlinear_sem_type', None)  # For nonlinear mode
                 
                 # Validate parameters
                 if not dataset_name:
@@ -302,8 +304,15 @@ class NOTEARSWebApp:
                 if graph_type not in ['ER', 'SF', 'BP']:
                     return jsonify({'success': False, 'error': 'Graph type must be ER, SF, or BP'})
                 
-                if sem_type not in ['gauss', 'exp', 'gumbel', 'uniform', 'logistic', 'poisson']:
-                    return jsonify({'success': False, 'error': 'SEM type must be one of: gauss, exp, gumbel, uniform, logistic, poisson'})
+                if sem_mode not in ['linear', 'nonlinear']:
+                    return jsonify({'success': False, 'error': 'SEM mode must be linear or nonlinear'})
+                
+                if sem_mode == 'linear':
+                    if sem_type not in ['gauss', 'exp', 'gumbel', 'uniform', 'logistic', 'poisson']:
+                        return jsonify({'success': False, 'error': 'Linear SEM type must be one of: gauss, exp, gumbel, uniform, logistic, poisson'})
+                elif sem_mode == 'nonlinear':
+                    if nonlinear_sem_type not in ['mlp', 'mim', 'gp', 'gp-add']:
+                        return jsonify({'success': False, 'error': 'Nonlinear SEM type must be one of: mlp, mim, gp, gp-add'})
                 
                 # Check if dataset name already exists
                 dataset_dir = os.path.join('datasets', dataset_name)
@@ -312,7 +321,7 @@ class NOTEARSWebApp:
                 
                 # Generate synthetic dataset
                 try:
-                    X, W_true = create_artifical_dataset(n_samples, n_nodes, n_edges, graph_type, sem_type)
+                    X, W_true = create_artifical_dataset(n_samples, n_nodes, n_edges, graph_type, sem_type, sem_mode, nonlinear_sem_type)
                 except Exception as e:
                     return jsonify({'success': False, 'error': f'Failed to generate synthetic dataset: {str(e)}'})
                 
@@ -341,9 +350,10 @@ class NOTEARSWebApp:
                 actual_edges = int(np.sum(W_true != 0))
                 
                 # Create info.json
+                sem_description = f'{sem_type} noise' if sem_mode == 'linear' else f'{nonlinear_sem_type} nonlinear'
                 info = {
                     'name': dataset_name,
-                    'description': description or f'Synthetic {graph_type} graph with {sem_type} noise',
+                    'description': description or f'Synthetic {graph_type} graph with {sem_description}',
                     'nodes': n_nodes,
                     'edges': actual_edges,
                     'samples': n_samples,
@@ -352,7 +362,9 @@ class NOTEARSWebApp:
                     'synthetic': True,
                     'generation_params': {
                         'graph_type': graph_type,
-                        'sem_type': sem_type,
+                        'sem_mode': sem_mode,
+                        'sem_type': sem_type if sem_mode == 'linear' else None,
+                        'nonlinear_sem_type': nonlinear_sem_type if sem_mode == 'nonlinear' else None,
                         'expected_edges': n_edges,
                         'actual_edges': actual_edges
                     }

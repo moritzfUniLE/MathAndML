@@ -2261,20 +2261,30 @@ function updateSyntheticPreview() {
     const nodes = document.getElementById('syntheticNodes').value;
     const edges = document.getElementById('syntheticEdges').value;
     const graphType = document.getElementById('syntheticGraphType').value;
-    const semType = document.getElementById('syntheticSemType').value;
+    const semModeLinear = document.getElementById('semModeLinear').checked;
     
     // Update preview spans
     document.getElementById('previewSamples').textContent = samples;
     document.getElementById('previewNodes').textContent = nodes;
     document.getElementById('previewEdges').textContent = edges;
-    document.getElementById('previewSemType').textContent = getSemTypeDisplayName(semType);
     document.getElementById('previewGraphType').textContent = getGraphTypeDisplayName(graphType);
+    document.getElementById('previewSemMode').textContent = semModeLinear ? 'Linear' : 'Nonlinear';
+    
+    // Update SEM type display
+    if (semModeLinear) {
+        const semType = document.getElementById('syntheticSemType').value;
+        document.getElementById('previewSemTypeDisplay').textContent = getSemTypeDisplayName(semType) + ' noise';
+    } else {
+        const nonlinearSemType = document.getElementById('syntheticNonlinearSemType').value;
+        document.getElementById('previewSemTypeDisplay').textContent = getNonlinearSemTypeDisplayName(nonlinearSemType);
+    }
     
     // Auto-generate dataset name if empty
     const nameInput = document.getElementById('syntheticDatasetName');
     if (!nameInput.value.trim()) {
         const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        nameInput.value = `synthetic_${graphType.toLowerCase()}_${nodes}n_${edges}e_${timestamp}`;
+        const semMode = semModeLinear ? 'linear' : 'nonlinear';
+        nameInput.value = `synthetic_${graphType.toLowerCase()}_${nodes}n_${edges}e_${semMode}_${timestamp}`;
     }
 }
 
@@ -2291,6 +2301,17 @@ function getSemTypeDisplayName(semType) {
     return displayNames[semType] || semType;
 }
 
+// Get display name for nonlinear SEM type
+function getNonlinearSemTypeDisplayName(nonlinearSemType) {
+    const displayNames = {
+        'mlp': 'MLP (Multi-layer perceptron)',
+        'mim': 'MIM (Mixture of interactions)',
+        'gp': 'GP (Gaussian process)',
+        'gp-add': 'GP-ADD (Additive Gaussian process)'
+    };
+    return displayNames[nonlinearSemType] || nonlinearSemType;
+}
+
 // Get display name for graph type
 function getGraphTypeDisplayName(graphType) {
     const displayNames = {
@@ -2301,8 +2322,27 @@ function getGraphTypeDisplayName(graphType) {
     return displayNames[graphType] || graphType;
 }
 
+// Toggle SEM mode display
+function toggleSemMode() {
+    const semModeLinear = document.getElementById('semModeLinear').checked;
+    const linearContainer = document.getElementById('linearSemTypeContainer');
+    const nonlinearContainer = document.getElementById('nonlinearSemTypeContainer');
+    
+    if (semModeLinear) {
+        linearContainer.style.display = 'block';
+        nonlinearContainer.style.display = 'none';
+    } else {
+        linearContainer.style.display = 'none';
+        nonlinearContainer.style.display = 'block';
+    }
+    
+    validateSyntheticParams();
+    updateSyntheticPreview();
+}
+
 // Generate synthetic dataset
 async function generateSyntheticDataset() {
+    const semModeLinear = document.getElementById('semModeLinear').checked;
     const payload = {
         dataset_name: document.getElementById('syntheticDatasetName').value.trim(),
         description: document.getElementById('syntheticDescription').value.trim(),
@@ -2310,7 +2350,9 @@ async function generateSyntheticDataset() {
         n_nodes: parseInt(document.getElementById('syntheticNodes').value),
         n_edges: parseInt(document.getElementById('syntheticEdges').value),
         graph_type: document.getElementById('syntheticGraphType').value,
-        sem_type: document.getElementById('syntheticSemType').value
+        sem_mode: semModeLinear ? 'linear' : 'nonlinear',
+        sem_type: semModeLinear ? document.getElementById('syntheticSemType').value : 'gauss',
+        nonlinear_sem_type: semModeLinear ? null : document.getElementById('syntheticNonlinearSemType').value
     };
     
     try {
