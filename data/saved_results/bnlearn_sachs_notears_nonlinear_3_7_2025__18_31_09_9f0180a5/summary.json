@@ -1,0 +1,19 @@
+{
+  "name": "bnlearn_sachs_notears_nonlinear_3_7_2025__18_31_09",
+  "dataset": "bnlearn_sachs",
+  "algorithm": "NOTEARS Nonlinear",
+  "runtime": 43.1509165763855,
+  "learned_edges": 19,
+  "nodes": 11,
+  "metrics": {
+    "hamming_distance": 18,
+    "true_positives": 9,
+    "false_positives": 10,
+    "false_negatives": 8,
+    "precision": 0.47368421052631576,
+    "recall": 0.5294117647058824,
+    "f1_score": 0.5,
+    "error": null
+  },
+  "saved_date": "2025-07-03T16:31:13.694Z"
+}

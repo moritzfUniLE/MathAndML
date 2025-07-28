@@ -1,0 +1,10 @@
+{
+  "lambda1": 0.01,
+  "lambda2": 0.01,
+  "max_iter": 100,
+  "hidden_units": 10,
+  "h_tol": 1e-08,
+  "rho_max": 1e+32,
+  "rho_mult": 2,
+  "threshold": 0.1
+}

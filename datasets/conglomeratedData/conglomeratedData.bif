@@ -1,0 +1,118 @@
+network sachs {
+}
+
+variable Erk {
+  type discrete [ 2 ] { 0, 1 };
+}
+
+variable Akt {
+  type discrete [ 2 ] { 0, 1 };
+}
+
+variable PKA {
+  type discrete [ 2 ] { 0, 1 };
+}
+
+variable Mek {
+  type discrete [ 2 ] { 0, 1 };
+}
+
+variable Jnk {
+  type discrete [ 2 ] { 0, 1 };
+}
+
+variable PKC {
+  type discrete [ 2 ] { 0, 1 };
+}
+
+variable Raf {
+  type discrete [ 2 ] { 0, 1 };
+}
+
+variable P38 {
+  type discrete [ 2 ] { 0, 1 };
+}
+
+variable PIP3 {
+  type discrete [ 2 ] { 0, 1 };
+}
+
+variable PIP2 {
+  type discrete [ 2 ] { 0, 1 };
+}
+
+variable Plcg {
+  type discrete [ 2 ] { 0, 1 };
+}
+
+probability ( Erk | PKA, Mek ) {
+  (0, 0) 0.3, 0.7;
+  (1, 0) 0.3, 0.7;
+  (0, 1) 0.3, 0.7;
+  (1, 1) 0.3, 0.7;
+}
+
+probability ( Akt | Erk, PKA ) {
+  (0, 0) 0.3, 0.7;
+  (1, 0) 0.3, 0.7;
+  (0, 1) 0.3, 0.7;
+  (1, 1) 0.3, 0.7;
+}
+
+probability ( PKA | PKC ) {
+  (0) 0.3, 0.7;
+  (1) 0.3, 0.7;
+}
+
+probability ( Mek | PKA, PKC, Raf ) {
+  (0, 0, 0) 0.3, 0.7;
+  (1, 0, 0) 0.3, 0.7;
+  (0, 1, 0) 0.3, 0.7;
+  (1, 1, 0) 0.3, 0.7;
+  (0, 0, 1) 0.3, 0.7;
+  (1, 0, 1) 0.3, 0.7;
+  (0, 1, 1) 0.3, 0.7;
+  (1, 1, 1) 0.3, 0.7;
+}
+
+probability ( Jnk | PKA, PKC ) {
+  (0, 0) 0.3, 0.7;
+  (1, 0) 0.3, 0.7;
+  (0, 1) 0.3, 0.7;
+  (1, 1) 0.3, 0.7;
+}
+
+probability ( PKC ) {
+  table 0.5, 0.5;
+}
+
+probability ( Raf | PKA, PKC ) {
+  (0, 0) 0.3, 0.7;
+  (1, 0) 0.3, 0.7;
+  (0, 1) 0.3, 0.7;
+  (1, 1) 0.3, 0.7;
+}
+
+probability ( P38 | PKA, PKC ) {
+  (0, 0) 0.3, 0.7;
+  (1, 0) 0.3, 0.7;
+  (0, 1) 0.3, 0.7;
+  (1, 1) 0.3, 0.7;
+}
+
+probability ( PIP3 | Plcg ) {
+  (0) 0.3, 0.7;
+  (1) 0.3, 0.7;
+}
+
+probability ( PIP2 | PIP3, Plcg ) {
+  (0, 0) 0.3, 0.7;
+  (1, 0) 0.3, 0.7;
+  (0, 1) 0.3, 0.7;
+  (1, 1) 0.3, 0.7;
+}
+
+probability ( Plcg ) {
+  table 0.5, 0.5;
+}
+

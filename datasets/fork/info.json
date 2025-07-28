@@ -1,0 +1,43 @@
+{
+  "name": "fork",
+  "description": "Synthetic nonlinear dataset",
+  "type": "nonlinear",
+  "nodes": 4,
+  "variables": [
+    "A",
+    "B",
+    "C",
+    "D"
+  ],
+  "edges": 3,
+  "samples": 5000,
+  "bif_file": "fork.bif",
+  "data_file": "fork_data.csv",
+  "structure_parsed": true,
+  "adjacency_matrix": [
+    [
+      0.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  ]
+}
